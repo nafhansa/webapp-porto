@@ -9,6 +9,8 @@ interface Message {
   timestamp: Date
 }
 
+const API_BASE = process.env.NEXT_PUBLIC_CHATBOT_API_BASE || "https://webapp-porto-production.up.railway.app"
+
 export function PikachuChatbot() {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
@@ -56,7 +58,7 @@ export function PikachuChatbot() {
 
     try {
       // Call AI backend
-      const response = await fetch("http://localhost:8080/chat", {
+      const response = await fetch(`${API_BASE}/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -88,7 +90,7 @@ export function PikachuChatbot() {
       // Fallback response
       const fallbackMessage: Message = {
         id: nextIdRef.current++,
-        text: "Maaf, Pikachu sedang offline 😅 Pastikan backend sudah running di http://localhost:8080",
+        text: "⚠️ Maaf, Pikachu gak bisa konek ke backend sekarang 😅",
         sender: "pikachu",
         timestamp: new Date(),
       }
