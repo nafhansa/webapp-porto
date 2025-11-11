@@ -9,3 +9,5 @@ export default function Home() {
     </>
   )
 }
+
+export const dynamic = 'auto'
