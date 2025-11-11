@@ -13,7 +13,7 @@ interface ChatMessage {
 }
 
 const getApiBase = (): string => {
-  let envBase = import.meta.env?.VITE_CHATBOT_API_BASE as string | undefined
+  let envBase = process.env.NEXT_PUBLIC_CHATBOT_API_BASE as string | undefined
 
   if (envBase) {
     envBase = envBase.trim()
@@ -23,7 +23,7 @@ const getApiBase = (): string => {
     return envBase
   }
 
-  const host = window.location.hostname
+  const host = typeof window !== "undefined" ? window.location.hostname : ""
   const isLocal = host === "localhost" || host === "127.0.0.1" || host === "::1"
 
   return isLocal ? "http://127.0.0.1:8080" : "https://webapp-porto-production.up.railway.app"
