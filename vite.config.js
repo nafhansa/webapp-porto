@@ -8,27 +8,18 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000, 
     rollupOptions: {
       output: {
-        // GANTI BAGIAN manualChunks JADI FUNCTION SEPERTI INI:
         manualChunks(id) {
-          // Cek apakah file ini berasal dari folder node_modules (library luar)
           if (id.includes('node_modules')) {
             
-            // 1. Deteksi Three.js, React Three Fiber, Drei
+            // 1. PISAHKAN THREE.JS & TEMAN-TEMANNYA 
             if (id.includes('three') || id.includes('@react-three')) {
-              return 'three-bundle'; // Gabung jadi satu file bernama three-bundle.js
+              return 'three-bundle';
             }
 
-            // 2. Deteksi React & Router
-            if (id.includes('react') || id.includes('scheduler')) {
-              return 'vendor-react'; // Gabung jadi vendor-react.js
-            }
-
-            // 3. (Opsional) Deteksi Framer Motion HANYA jika ada
+            // 2. Deteksi Framer Motion (Kalau ada)
             if (id.includes('framer-motion')) {
               return 'animations';
             }
-            
-            // Sisanya biarkan Vite yang atur (atau masuk ke file utama yang kecil)
           }
         }
       }
