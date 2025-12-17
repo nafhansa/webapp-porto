@@ -5,6 +5,12 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 // Register Plugin
 gsap.registerPlugin(ScrollTrigger);
 
+ScrollTrigger.config({
+  autoRefreshEvents: "visibilitychange,DOMContentLoaded,load", 
+  ignoreMobileResize: true, // WAJIB: Biar gak reflow pas address bar Chrome mobile muncul/hilang
+  syncInterval: 999 // Mengurangi frekuensi pengecekan sinkronisasi
+});
+
 const AboutSection: React.FC = () => {
     const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
     useEffect(() => {

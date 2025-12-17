@@ -2,19 +2,25 @@ import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
+// ==========================================
+// 2. GLOBAL GSAP CONFIG (Cegah Reflow)
+// ==========================================
 gsap.registerPlugin(ScrollTrigger);
 
-// ==========================================
-// TIPE DATA & DATABASE QUEST
-// ==========================================
+ScrollTrigger.config({
+  autoRefreshEvents: "visibilitychange,DOMContentLoaded,load", 
+  ignoreMobileResize: true, 
+  syncInterval: 999 
+});
+
 interface QuestData {
     id: number;
     title: string;
-    type: string; // e.g. "Main Quest", "Side Quest"
-    difficulty: string; // e.g. "⭐⭐⭐⭐"
+    type: string;
+    difficulty: string;
     desc: string;
-    rewards: string[]; // Tech Stack icons URLs
-    link: string; // Project Link
+    rewards: string[];
+    link: string;
     status: "COMPLETED" | "IN PROGRESS";
 }
 
@@ -49,14 +55,13 @@ const quests: QuestData[] = [
         ],
         link: "https://campuscompass.id"
     },
-    // Contoh Quest Lain (Bisa ditambah)
     {
         id: 3,
         title: "Portfolio V1",
         type: "SIDE QUEST",
         difficulty: "⭐⭐",
         status: "COMPLETED",
-        desc: " The very first scroll. A simple static site created to document early journey logs. Built with pure HTML/CSS before acquiring the React framework skill.",
+        desc: "The very first scroll. A simple static site created to document early journey logs. Built with pure HTML/CSS before acquiring the React framework skill.",
         rewards: [
             "https://cdn.simpleicons.org/html5/E34F26",
             "https://cdn.simpleicons.org/css3/1572B6",
@@ -65,23 +70,20 @@ const quests: QuestData[] = [
     }
 ];
 
-// ==========================================
-// COMPONENT QUEST LOG
-// ==========================================
 const QuestLogSection: React.FC = () => {
     const [selectedQuest, setSelectedQuest] = useState<QuestData>(quests[0]);
     const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
-    useEffect(() => {
-        const onResize = () => setIsMobile(window.innerWidth < 768);
-        window.addEventListener('resize', onResize);
-        return () => window.removeEventListener('resize', onResize);
-    }, []);
     
     const sectionRef = useRef<HTMLElement>(null);
     const bookRef = useRef<HTMLDivElement>(null);
     const rightPageContentRef = useRef<HTMLDivElement>(null);
 
-    // Animasi Ganti Halaman (Content Fade In/Out)
+    useEffect(() => {
+        const onResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
+
     useEffect(() => {
         if (rightPageContentRef.current) {
             gsap.fromTo(rightPageContentRef.current,
@@ -91,21 +93,20 @@ const QuestLogSection: React.FC = () => {
         }
     }, [selectedQuest]);
 
-    // Animasi Buku Muncul saat Scroll
     useEffect(() => {
         const ctx = gsap.context(() => {
             gsap.from(bookRef.current, {
                 scrollTrigger: {
                     trigger: sectionRef.current,
-                    start: "top 75%", // Muncul agak lebih awal
+                    start: "top 75%",
                     end: "top 20%",
                     toggleActions: "play none none reverse",
                 },
                 y: 100,
-                rotationX: 30, // Efek tilt 3D
+                rotationX: 30,
                 opacity: 0,
                 duration: 1.2,
-                ease: "back.out(1.7)" // Efek membal sedikit
+                ease: "back.out(1.7)"
             });
         }, sectionRef);
         return () => ctx.revert();
@@ -117,11 +118,11 @@ const QuestLogSection: React.FC = () => {
             style={{
                 width: '100%',
                 minHeight: '115vh',
-                backgroundColor: '#181818', // Lebih gelap dari inventory biar kontras
+                backgroundColor: '#181818',
                 backgroundImage: `
                     radial-gradient(circle at 50% 50%, #2a2a2a 1px, transparent 1px),
                     linear-gradient(to bottom, rgba(0,0,0,0.8), transparent 20%, transparent 80%, rgba(0,0,0,0.8))
-                `, // Efek vignette gelap di atas bawah
+                `,
                 backgroundSize: '24px 24px, 100% 100%',
                 display: 'flex',
                 flexDirection: 'column',
@@ -132,13 +133,29 @@ const QuestLogSection: React.FC = () => {
                 overflow: 'hidden'
             }}
         >
-            <h2 
-                id="quest-log"
-                style={{
+            {/* 3. OPTIMASI CSS UNTUK BUTTON (GPU ACCELERATED) */}
+            <style>{`
+                .warp-btn {
+                    background: #8B4513 !important;
+                    box-shadow: 0 6px 0 #4e270a !important;
+                    transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.2s ease !important;
+                    transform: translateY(0);
+                    will-change: transform, box-shadow;
+                }
+                .warp-btn:hover {
+                    background: #9e5219 !important;
+                }
+                .warp-btn:active {
+                    transform: translateY(6px) !important;
+                    box-shadow: 0 0 0 #4e270a !important;
+                }
+            `}</style>
+
+            <h2 id="quest-log" style={{
                 fontFamily: '"Press Start 2P", cursive',
                 fontSize: 'clamp(2rem, 5vw, 3rem)',
                 marginBottom: '50px',
-                color: '#e0c097', // Warna emas pudar
+                color: '#e0c097',
                 textShadow: '4px 4px 0 #000',
                 textAlign: 'center',
                 letterSpacing: '-2px'
@@ -146,34 +163,30 @@ const QuestLogSection: React.FC = () => {
                 PROJECT LOGS
             </h2>
 
-            {/* --- THE ANCIENT BOOK CONTAINER --- */}
-            <div
-                ref={bookRef}
-                style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    maxWidth: '1100px',
-                    width: '100%',
-                    background: '#5c3a21', // Kulit Coklat Tua
-                    padding: '12px', // Ketebalan cover
-                    borderRadius: '12px 24px 24px 12px',
-                    boxShadow: '20px 20px 0px rgba(0,0,0,0.4), inset 0 0 40px rgba(0,0,0,0.6)',
-                    position: 'relative',
-                    border: '2px solid #3e2716'
-                }}
-            >
-                {/* PAGE 1: QUEST LIST (LEFT) */}
+            <div ref={bookRef} style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                maxWidth: '1100px',
+                width: '100%',
+                background: '#5c3a21',
+                padding: '12px',
+                borderRadius: '12px 24px 24px 12px',
+                boxShadow: '20px 20px 0px rgba(0,0,0,0.4), inset 0 0 40px rgba(0,0,0,0.6)',
+                position: 'relative',
+                border: '2px solid #3e2716'
+            }}>
+                {/* PAGE 1: LEFT */}
                 <div style={{
-                    flex: isMobile ? '1 1 100%' : '1 1 350px', // Responsive width
-                    background: '#f2e8d5', // Warna Kertas Parchment
-                    backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px)', // Garis tulis tipis
+                    flex: isMobile ? '1 1 100%' : '1 1 350px',
+                    background: '#f2e8d5',
+                    backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px)',
                     backgroundSize: '100% 2rem',
                     padding: '40px 30px',
                     minHeight: '600px',
                     borderRadius: isMobile ? '4px' : '4px 0 0 4px',
                     borderRight: isMobile ? 'none' : '1px solid #d3c1a5', 
                     position: 'relative',
-                    boxShadow: isMobile ? 'none' : 'inset -30px 0 40px -20px rgba(0,0,0,0.2)' // Bayangan lipatan tengah
+                    boxShadow: isMobile ? 'none' : 'inset -30px 0 40px -20px rgba(0,0,0,0.2)'
                 }}>
                     <h3 style={{
                         fontFamily: '"Press Start 2P", cursive',
@@ -182,11 +195,8 @@ const QuestLogSection: React.FC = () => {
                         borderBottom: '4px double #8B4513',
                         paddingBottom: '15px',
                         marginBottom: '30px',
-                        textAlign: 'center',
-                        textTransform: 'uppercase'
-                    }}>
-                        Active Quests
-                    </h3>
+                        textAlign: 'center'
+                    }}>Active Quests</h3>
 
                     <ul style={{ listStyle: 'none', padding: 0 }}>
                         {quests.map((quest) => (
@@ -197,7 +207,6 @@ const QuestLogSection: React.FC = () => {
                                     padding: '18px 15px',
                                     marginBottom: '15px',
                                     cursor: 'pointer',
-                                    // Logic Highlight
                                     background: selectedQuest.id === quest.id ? 'rgba(139, 69, 19, 0.15)' : 'transparent',
                                     border: selectedQuest.id === quest.id ? '2px dashed #8B4513' : '2px solid transparent',
                                     transform: selectedQuest.id === quest.id ? 'translateX(5px)' : 'translateX(0)',
@@ -208,155 +217,82 @@ const QuestLogSection: React.FC = () => {
                                     borderRadius: '4px'
                                 }}
                             >
-                                <span style={{ 
-                                    color: selectedQuest.id === quest.id ? '#8B4513' : '#aaa',
-                                    fontSize: '1.2rem',
-                                    fontFamily: '"Press Start 2P", cursive'
-                                }}>
+                                <span style={{ color: selectedQuest.id === quest.id ? '#8B4513' : '#aaa', fontSize: '1.2rem', fontFamily: '"Press Start 2P", cursive' }}>
                                     {selectedQuest.id === quest.id ? '>' : '-'}
                                 </span>
                                 <div>
-                                    <div style={{ 
-                                        fontWeight: 'bold', fontSize: '1.1rem', 
-                                        color: '#3e2716', fontFamily: '"Press Start 2P", cursive',
-                                        marginBottom: '6px', lineHeight: '1.4'
-                                    }}>
-                                        {quest.title}
-                                    </div>
-                                    <div style={{ 
-                                        fontSize: '0.85rem', color: '#776', fontWeight: 'bold',
-                                        fontFamily: 'monospace'
-                                    }}>
-                                        [{quest.type}]
-                                    </div>
+                                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#3e2716', fontFamily: '"Press Start 2P", cursive', marginBottom: '6px' }}>{quest.title}</div>
+                                    <div style={{ fontSize: '0.85rem', color: '#776', fontWeight: 'bold' }}>[{quest.type}]</div>
                                 </div>
                             </li>
                         ))}
                     </ul>
-
-                    {/* Hiasan Nomor Halaman Kiri */}
-                    <div style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', color: '#888', fontFamily: '"Press Start 2P", cursive', fontSize: '0.8rem' }}>
-                        4
-                    </div>
                 </div>
 
-                {/* PAGE 2: QUEST DETAILS (RIGHT) */}
-                <div
-                    style={{
-                        flex: isMobile ? '1 1 100%' : '1 1 350px',
-                        background: '#f2e8d5',
-                        padding: '40px 30px',
-                        minHeight: '600px',
-                        borderRadius: isMobile ? '4px' : '0 4px 4px 0',
-                        position: 'relative',
-                        boxShadow: isMobile ? 'none' : 'inset 30px 0 40px -20px rgba(0,0,0,0.15)' // Bayangan lipatan tengah
-                    }}
-                >
+                {/* PAGE 2: RIGHT */}
+                <div style={{
+                    flex: isMobile ? '1 1 100%' : '1 1 350px',
+                    background: '#f2e8d5',
+                    padding: '40px 30px',
+                    minHeight: '600px',
+                    borderRadius: isMobile ? '4px' : '0 4px 4px 0',
+                    position: 'relative',
+                    boxShadow: isMobile ? 'none' : 'inset 30px 0 40px -20px rgba(0,0,0,0.15)'
+                }}>
                     <div ref={rightPageContentRef}>
-                        {/* STAMP COMPLETED */}
                         {selectedQuest.status === 'COMPLETED' && (
                             <div style={{
-                                position: 'absolute',
-                                top: '30px', right: '30px',
-                                border: '6px solid #b30000',
-                                color: '#b30000',
-                                padding: '8px 14px',
-                                fontFamily: '"Press Start 2P", cursive',
-                                fontSize: '1rem',
-                                transform: 'rotate(-15deg)',
-                                opacity: 0.6,
-                                pointerEvents: 'none',
-                                mixBlendMode: 'multiply' // Efek nempel di kertas
-                            }}>
-                                CLEARED
-                            </div>
+                                position: 'absolute', top: '30px', right: '30px',
+                                border: '6px solid #b30000', color: '#b30000',
+                                padding: '8px 14px', fontFamily: '"Press Start 2P", cursive',
+                                fontSize: '1rem', transform: 'rotate(-15deg)',
+                                opacity: 0.6, pointerEvents: 'none', mixBlendMode: 'multiply'
+                            }}>CLEARED</div>
                         )}
 
-                        <h3 style={{
-                            fontFamily: '"Press Start 2P", cursive',
-                            fontSize: '1.5rem',
-                            color: '#2c1e12',
-                            marginBottom: '15px',
-                            paddingRight: '80px', // Space for stamp
-                            lineHeight: '1.4',
-                            borderBottom: '2px solid #d3c1a5',
-                            paddingBottom: '15px'
-                        }}>
+                        <h3 style={{ fontFamily: '"Press Start 2P", cursive', fontSize: '1.5rem', color: '#2c1e12', marginBottom: '15px', borderBottom: '2px solid #d3c1a5', paddingBottom: '15px' }}>
                             {selectedQuest.title}
                         </h3>
 
-                        <div style={{ 
-                            display: 'flex', justifyContent: 'space-between', 
-                            color: '#665', fontStyle: 'italic', marginBottom: '30px', 
-                            fontFamily: 'monospace', fontSize: '1rem' 
-                        }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#665', marginBottom: '30px', fontSize: '1rem' }}>
                             <span>Rank: <strong style={{color: '#8B4513'}}>{selectedQuest.type}</strong></span>
                             <span>Diff: <span style={{ color: '#e67e22' }}>{selectedQuest.difficulty}</span></span>
                         </div>
 
                         <div style={{ marginBottom: '30px' }}>
                             <h4 style={{ fontFamily: '"Press Start 2P", cursive', fontSize: '0.9rem', color: '#5c3a21', marginBottom: '10px' }}>MISSION BRIEF:</h4>
-                            <p style={{ 
-                                lineHeight: '1.8', color: '#333', fontSize: '1.1rem', 
-                                fontFamily: 'monospace', textAlign: 'justify' 
-                            }}>
-                                {selectedQuest.desc}
-                            </p>
+                            <p style={{ lineHeight: '1.8', color: '#333', fontSize: '1.1rem', textAlign: 'justify' }}>{selectedQuest.desc}</p>
                         </div>
 
                         <div style={{ marginBottom: '40px' }}>
                             <h4 style={{ fontFamily: '"Press Start 2P", cursive', fontSize: '0.9rem', color: '#5c3a21', marginBottom: '15px' }}>LOOT ACQUIRED:</h4>
                             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                                 {selectedQuest.rewards.map((url, i) => (
-                                    <div key={i} title="Tech Stack" style={{
-                                        width: '48px', height: '48px',
-                                        background: '#fff', padding: '8px', borderRadius: '8px',
-                                        border: '2px solid #d3c1a5', 
-                                        boxShadow: '3px 3px 0 #cbb',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                    }}>
+                                    <div key={i} style={{ width: '48px', height: '48px', background: '#fff', padding: '8px', borderRadius: '8px', border: '2px solid #d3c1a5', boxShadow: '3px 3px 0 #cbb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <img src={url} alt="tech" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                     </div>
                                 ))}
                             </div>
                         </div>
 
+                        {/* TOMBOL YANG SUDAH DIOPTIMASI */}
                         <button
+                            className="warp-btn"
                             onClick={() => window.open(selectedQuest.link, '_blank')}
                             style={{
-                                background: '#8B4513',
                                 color: '#fff',
                                 border: 'none',
                                 padding: '18px 30px',
                                 fontFamily: '"Press Start 2P", cursive',
                                 fontSize: '0.9rem',
                                 cursor: 'pointer',
-                                boxShadow: '0 6px 0 #4e270a', // Efek tombol tebal
-                                transition: 'transform 0.1s, box-shadow 0.1s',
                                 display: 'block',
                                 width: '100%',
                                 borderRadius: '8px',
-                                position: 'relative',
-                                top: 0
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.background = '#9e5219'}
-                            onMouseLeave={(e) => e.currentTarget.style.background = '#8B4513'}
-                            onMouseDown={(e) => {
-                                e.currentTarget.style.transform = 'translateY(6px)'; // Efek pencet
-                                e.currentTarget.style.boxShadow = '0 0 0 #4e270a';
-                            }}
-                            onMouseUp={(e) => {
-                                e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = '0 6px 0 #4e270a';
                             }}
                         >
                             WARP TO LOCATION
                         </button>
-                    </div>
-
-                    {/* Hiasan Nomor Halaman Kanan */}
-                    <div style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', color: '#888', fontFamily: '"Press Start 2P", cursive', fontSize: '0.8rem' }}>
-                        5
                     </div>
                 </div>
             </div>

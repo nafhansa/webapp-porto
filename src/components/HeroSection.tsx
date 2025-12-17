@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { useGLTF, useAnimations, PerspectiveCamera, ContactShadows, Float, Stars } from '@react-three/drei';
 import * as THREE from 'three';
@@ -7,16 +7,11 @@ interface SteveProps {
     scale?: number;
 }
 
-// Komponen Landasan (Ground) - POSISI KEMBALI KE ASAL
 function MinecraftGround() {
     return (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.5, 0]} receiveShadow>
             <planeGeometry args={[1000, 1000]} />
-            <meshStandardMaterial
-                color="#559944"
-                roughness={1}
-                metalness={0}
-            />
+            <meshStandardMaterial color="#559944" roughness={1} metalness={0} />
         </mesh>
     );
 }
@@ -30,7 +25,6 @@ function SteveModel({ scale = 0.035 }: SteveProps) {
             const walkAnim = actions['Walk'] || actions['walk'] || actions[Object.keys(actions)[0]];
             walkAnim?.reset().play();
         }
-
         scene.traverse((child) => {
             if ((child as THREE.Mesh).isMesh) {
                 child.castShadow = true;
@@ -41,31 +35,27 @@ function SteveModel({ scale = 0.035 }: SteveProps) {
 
     return (
         <Float speed={2} rotationIntensity={0.1} floatIntensity={0.2} floatingRange={[0, 0.2]}>
-            <primitive
-                object={scene}
-                scale={scale}
-                // POSISI KEMBALI KE ASAL (Sesuai kodemu)
-                position={[0, 0.46, 0]}
-                rotation={[0, Math.PI / 8, 0]}
-            />
+            <primitive object={scene} scale={scale} position={[0, 0.46, 0]} rotation={[0, Math.PI / 8, 0]} />
         </Float>
     );
 }
 
 const HeroSection: React.FC = () => {
-    // simple hook local to file to detect mobile width
+    // 1. Tetap gunakan isMobile untuk UI HTML, tapi jangan pakai untuk properti berat Three.js
     const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+
     useEffect(() => {
         const onResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', onResize);
         return () => window.removeEventListener('resize', onResize);
     }, []);
-    return (
-        // 1. BACKGROUND DIGANTI GELAP (MALAM)
-        <div id="spawn-point"
-            style={{ width: '100%', height: '100vh', position: 'relative', background: '#090910', overflow: 'hidden' }}>
 
-            {/* UI Overlay */}
+    // 2. Gunakan useMemo untuk nilai yang tidak perlu berubah-ubah agar tidak memicu kalkulasi ulang
+    const shadowMapSize = useMemo(() => (isMobile ? 512 : 1024), [isMobile]);
+
+    return (
+        <div id="spawn-point" style={{ width: '100%', height: '100vh', position: 'relative', background: '#090910', overflow: 'hidden' }}>
+            
             <div style={{
                 position: 'absolute',
                 top: isMobile ? '15%' : '5%',
@@ -100,48 +90,39 @@ const HeroSection: React.FC = () => {
                 </p>
             </div>
 
-                <Canvas shadows dpr={[1, 1.5]}>
+            {/* 3. OPTIMASI: Tambahkan dpr tetap agar tidak reflow saat resize kecil */}
+            <Canvas shadows dpr={[1, 1.5]} gl={{ powerPreference: "high-performance" }}>
+                {/* 4. OPTIMASI KAMERA: Berikan angka statis atau batasi perubahannya */}
                 <PerspectiveCamera makeDefault position={[0, 1, isMobile ? 18 : 12]} fov={50} />
 
-                {/* 2. STARS (BINTANG) TANPA SKY */}
-                <Stars 
-                    radius={100} 
-                    depth={50} 
-                    count={isMobile ? 1500 : 3000} 
-                    factor={4} 
-                    saturation={0} 
-                    fade 
-                    speed={1} 
-                />
+                {/* 5. OPTIMASI: Count bintang dibuat tetap (misal 2500) agar tidak re-generate array saat resize */}
+                <Stars radius={100} depth={50} count={2500} factor={4} saturation={0} fade speed={1} />
 
-                {/* 3. LIGHTING MALAM (Moonlight) */}
                 <ambientLight intensity={0.3} />
                 <directionalLight
-                    color="#b9d5ff" // Biru pucat (bulan)
+                    color="#b9d5ff"
                     position={[10, 20, 10]}
                     intensity={1.0}
                     castShadow
-                    shadow-mapSize={[isMobile ? 512 : 1024, isMobile ? 512 : 1024]}
+                    shadow-mapSize={[shadowMapSize, shadowMapSize]}
                 />
 
                 <Suspense fallback={null}>
-                    {/* SKALA KEMBALI KE ASAL (Sesuai kodemu: 0.005) */}
                     <SteveModel scale={0.005} />
-
                     <MinecraftGround />
 
+                    {/* 6. FIXED RESOLUTION: Inilah kunci menghilangkan Forced Reflow di Three.js */}
                     <ContactShadows
                         position={[0, -1.79, 0]}
                         opacity={0.6}
                         scale={10}
                         blur={2}
-                        resolution={isMobile ? 128 : 256}
+                        resolution={256} // JANGAN pakai isMobile ? 128 : 256. Pakai angka tetap!
                         far={2}
                     />
                 </Suspense>
             </Canvas>
 
-            {/* Hotbar UI */}
             <div style={{
                 position: 'absolute',
                 bottom: '5%',
