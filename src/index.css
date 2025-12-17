@@ -1,55 +1,4 @@
 /* =========================================
-   1. FONT DECLARATIONS (SELF-HOSTED)
-   Taruh di paling atas biar rapi
-   ========================================= */
-
-/* Font Minecraft (Press Start 2P) */
-@font-face {
-  font-family: 'Press Start 2P';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  /* Pastikan file ini ada di public/fonts/press-start-2p-v16-latin-regular.woff2 */
-  src: url('/fonts/press-start-2p-v16-latin-regular.woff2') format('woff2');
-}
-
-/* Inter Light (300) */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 300;
-  font-display: swap;
-  src: url('/fonts/inter-v20-latin-300.woff2') format('woff2');
-}
-
-/* Inter Regular (400) */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/inter-v20-latin-regular.woff2') format('woff2');
-}
-
-/* Inter SemiBold (600) */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('/fonts/inter-v20-latin-600.woff2') format('woff2');
-}
-
-/* Inter Bold (700) */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('/fonts/inter-v20-latin-700.woff2') format('woff2');
-}
-
-/* =========================================
    2. GLOBAL STYLES
    ========================================= */
 
@@ -63,8 +12,6 @@ body {
   width: 100%;
   overflow-x: hidden;
   background-color: #000;
-  /* Cukup tulis sekali aja disini: */
-  font-family: 'Inter', sans-serif;
 }
 
 #root {

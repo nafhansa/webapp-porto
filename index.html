@@ -4,13 +4,42 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Minecraft Portfolio</title>
-    <style>
+<style>
       /* Font Definitions */
       @font-face{font-family:"Press Start 2P";font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/press-start-2p-v16-latin-regular.woff2) format("woff2")}
       @font-face{font-family:Inter;font-style:normal;font-weight:300;font-display:swap;src:url(/fonts/inter-v20-latin-300.woff2) format("woff2")}
       @font-face{font-family:Inter;font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/inter-v20-latin-regular.woff2) format("woff2")}
       @font-face{font-family:Inter;font-style:normal;font-weight:600;font-display:swap;src:url(/fonts/inter-v20-latin-600.woff2) format("woff2")}
       @font-face{font-family:Inter;font-style:normal;font-weight:700;font-display:swap;src:url(/fonts/inter-v20-latin-700.woff2) format("woff2")}
+
+      /* --- UPDATED GLOBAL STYLES --- */
+      html {
+        scroll-behavior: smooth;
+        background-color: #000; /* INI KUNCINYA: Biar dasar browser jadi hitam */
+        margin: 0;
+        padding: 0;
+      }
+      
+      body {
+        margin: 0; /* Pastikan ini 0 */
+        padding: 0;
+        width: 100%;
+        overflow-x: hidden;
+        background-color: #000;
+        font-family: 'Inter', sans-serif;
+      }
+
+      #root {
+        width: 100%;
+        min-height: 100vh;
+      }
+
+      /* Mobile Adjustments */
+      @media (max-width: 768px) {
+        section { padding: 80px 20px !important; box-sizing: border-box; }
+        section > * { margin-left: auto; margin-right: auto; box-sizing: border-box; }
+        .book-binding { display: none !important; }
+      }
     </style>
   </head>
   <body>
