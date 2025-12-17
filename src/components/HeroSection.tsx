@@ -17,7 +17,7 @@ function MinecraftGround() {
 }
 
 function SteveModel({ scale = 0.035 }: SteveProps) {
-    const { scene, animations } = useGLTF('/models/steve_rigged.glb');
+    const { scene, animations } = useGLTF('/models/steve_rigged.glb', true);
     const { actions } = useAnimations(animations, scene);
 
     useEffect(() => {
@@ -91,19 +91,24 @@ const HeroSection: React.FC = () => {
             </div>
 
             {/* 3. OPTIMASI: Tambahkan dpr tetap agar tidak reflow saat resize kecil */}
-            <Canvas shadows dpr={[1, 1.5]} gl={{ powerPreference: "high-performance" }}>
-                {/* 4. OPTIMASI KAMERA: Berikan angka statis atau batasi perubahannya */}
+            <Canvas 
+                // 1. Matikan sistem shadow utama jika mobile
+                shadows={!isMobile} 
+                dpr={[1, 1.2]} // Turunkan sedikit dpr di mobile untuk performa
+                gl={{ powerPreference: "high-performance", antialias: !isMobile }} // Antialias off di mobile juga membantu
+                >
                 <PerspectiveCamera makeDefault position={[0, 1, isMobile ? 18 : 12]} fov={50} />
 
-                {/* 5. OPTIMASI: Count bintang dibuat tetap (misal 2500) agar tidak re-generate array saat resize */}
-                <Stars radius={100} depth={50} count={2500} factor={4} saturation={0} fade speed={1} />
+                <Stars radius={100} depth={50} count={isMobile ? 1000 : 2500} factor={4} saturation={0} fade speed={1} />
 
-                <ambientLight intensity={0.3} />
+                <ambientLight intensity={isMobile ? 0.8 : 0.3} /> {/* Terangkan ambient jika shadow mati */}
+                
+                {/* 2. DirectionalLight: Matikan castShadow jika mobile */}
                 <directionalLight
                     color="#b9d5ff"
                     position={[10, 20, 10]}
                     intensity={1.0}
-                    castShadow
+                    castShadow={!isMobile} 
                     shadow-mapSize={[shadowMapSize, shadowMapSize]}
                 />
 
@@ -111,15 +116,17 @@ const HeroSection: React.FC = () => {
                     <SteveModel scale={0.005} />
                     <MinecraftGround />
 
-                    {/* 6. FIXED RESOLUTION: Inilah kunci menghilangkan Forced Reflow di Three.js */}
-                    <ContactShadows
-                        position={[0, -1.79, 0]}
-                        opacity={0.6}
-                        scale={10}
-                        blur={2}
-                        resolution={256} // JANGAN pakai isMobile ? 128 : 256. Pakai angka tetap!
-                        far={2}
-                    />
+                    {/* 3. ContactShadows: HANYA render jika bukan mobile */}
+                    {!isMobile && (
+                        <ContactShadows
+                            position={[0, -1.79, 0]}
+                            opacity={0.6}
+                            scale={10}
+                            blur={2}
+                            resolution={256} 
+                            far={2}
+                        />
+                    )}
                 </Suspense>
             </Canvas>
 
