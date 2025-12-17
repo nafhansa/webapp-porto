@@ -177,6 +177,14 @@ interface NetherPortalSceneProps {
 
 export default function NetherPortalScene({ onEnter, isZooming, setIsZooming }: NetherPortalSceneProps) {
     const [isHovered, setIsHovered] = useState(false)
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile(); // Cek saat load
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     // Fix Audio Context: Browser sering memblokir autoplay jika belum ada interaksi user
     useEffect(() => {
@@ -195,7 +203,7 @@ export default function NetherPortalScene({ onEnter, isZooming, setIsZooming }: 
 
     return (
         <div style={{ width: '100vw', height: '100vh', background: 'black', position: 'relative' }}>
-            <Canvas shadows dpr={[1, 2]}>
+            <Canvas shadows dpr={[1, 1.5]}>
                 <color attach="background" args={['#050005']} />
 
                 <PerspectiveCamera makeDefault position={[0, 4.3, 12]} fov={50} />
@@ -222,9 +230,11 @@ export default function NetherPortalScene({ onEnter, isZooming, setIsZooming }: 
                     <Preload all />
                 </Suspense>
 
-                <EffectComposer>
-                    <Bloom luminanceThreshold={0} intensity={1.8} mipmapBlur radius={0.4} />
-                </EffectComposer>
+                {!isMobile && (
+                    <EffectComposer>
+                     <Bloom luminanceThreshold={0} intensity={1.8} mipmapBlur radius={0.4} />
+                    </EffectComposer>
+                )}
             </Canvas>
 
             {/* --- TOMBOL ENTER PORTAL --- */}

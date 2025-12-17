@@ -100,7 +100,7 @@ const HeroSection: React.FC = () => {
                 </p>
             </div>
 
-                <Canvas shadows dpr={[1, 2]}>
+                <Canvas shadows dpr={[1, 1.5]}>
                 <PerspectiveCamera makeDefault position={[0, 1, isMobile ? 18 : 12]} fov={50} />
 
                 {/* 2. STARS (BINTANG) TANPA SKY */}
@@ -113,7 +113,7 @@ const HeroSection: React.FC = () => {
                     position={[10, 20, 10]}
                     intensity={1.0}
                     castShadow
-                    shadow-mapSize={[1024, 1024]}
+                    shadow-mapSize={[isMobile ? 512 : 1024, isMobile ? 512 : 1024]}
                 />
 
                 <Suspense fallback={null}>
