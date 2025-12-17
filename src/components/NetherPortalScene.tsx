@@ -12,32 +12,39 @@ interface PortalModelProps {
 
 function PortalModel({ isZooming, onEnter }: PortalModelProps) {
     const { scene } = useGLTF('/models/nether_portal.glb')
-    const portalMaterialRef = useRef<THREE.MeshStandardMaterial>(null!)
-    const autoRotateRef = useRef<THREE.Group>(null!)
+    const portalMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null)
+    const autoRotateRef = useRef<THREE.Group | null>(null)
     const zoomStartTimeRef = useRef<number | null>(null)
     const startCameraPosRef = useRef<THREE.Vector3 | null>(null)
     const startCameraTargetRef = useRef<THREE.Vector3 | null>(null) // Restore target ref
-    const audioRef = useRef<THREE.PositionalAudio>(null!) // Ref untuk kontrol volume manual
+    const audioRef = useRef<THREE.PositionalAudio | null>(null) // Ref untuk kontrol volume manual
 
     useEffect(() => {
         scene.traverse((child) => {
             if ((child as THREE.Mesh).isMesh) {
                 const mesh = child as THREE.Mesh
+
+                // Some GLTFs use array materials; normalize to the first material for property checks
+                const mat = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material
+
                 // Membuat obsidian terlihat matte/solid (tidak mengkilap)
-                if (mesh.material instanceof THREE.MeshStandardMaterial) {
-                    mesh.material.roughness = 0.8
-                    mesh.material.metalness = 0.1
+                if (mat instanceof THREE.MeshStandardMaterial) {
+                    mat.roughness = 0.8
+                    mat.metalness = 0.1
                 }
 
                 // Mencari mesh portal untuk diberi efek glow
                 if (mesh.name.toLowerCase().includes('portal') || mesh.name.toLowerCase().includes('fluid')) {
-                    mesh.material = new THREE.MeshStandardMaterial({
+                    const portalMat = new THREE.MeshStandardMaterial({
                         color: new THREE.Color('#ff00ff'),
                         emissive: new THREE.Color('#a020f0'),
                         emissiveIntensity: 15,
                         toneMapped: false,
                     })
-                    portalMaterialRef.current = mesh.material as THREE.MeshStandardMaterial
+
+                    // Assign the new material (Mesh.material accepts Material | Material[])
+                    mesh.material = portalMat as unknown as THREE.Material
+                    portalMaterialRef.current = portalMat
                 }
             }
         })
