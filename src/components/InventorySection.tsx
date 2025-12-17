@@ -102,7 +102,7 @@ const InventorySection: React.FC = () => {
     const [selectedItem, setSelectedItem] = useState<ItemData | null>(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     
-    // --- STATE BARU UNTUK KLIK & DROP ---
+    // --- STATE ---
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
     const [pickedIndex, setPickedIndex] = useState<number | null>(null);
 
@@ -113,20 +113,17 @@ const InventorySection: React.FC = () => {
 
     const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
 
-    // --- REUSABLE MOVE LOGIC ---
+    // --- MOVE LOGIC ---
     const moveItem = (fromIndex: number, toIndex: number) => {
         if (fromIndex === toIndex) return;
-        
         const newItems = [...items];
-        // Swap logic
         const temp = newItems[toIndex];
         newItems[toIndex] = newItems[fromIndex];
         newItems[fromIndex] = temp;
-        
         setItems(newItems);
     };
 
-    // --- EVENT HANDLERS (DRAG) ---
+    // --- DRAG HANDLERS ---
     const handleDragStart = (e: React.DragEvent, index: number) => {
         setDraggedIndex(index);
         setPickedIndex(null); 
@@ -147,22 +144,28 @@ const InventorySection: React.FC = () => {
         }
     };
 
-    // --- EVENT HANDLERS (CLICK / TAP) ---
+    // --- CLICK HANDLERS (LOGIC FIX DISINI) ---
     const handleSlotClick = (index: number) => {
+        // CASE 1: Belum ada yang di-pick
         if (pickedIndex === null) {
             if (items[index]) {
                 setPickedIndex(index);
-                setSelectedItem(items[index]); 
+                setSelectedItem(items[index]); // Munculin Tooltip
             }
         } 
+        // CASE 2: Sudah ada yang di-pick (Mau drop atau cancel)
         else {
             if (pickedIndex === index) {
+                // Cancel (klik slot yang sama)
                 setPickedIndex(null);
             } 
             else {
+                // Move (klik slot beda)
                 moveItem(pickedIndex, index);
                 setPickedIndex(null);
             }
+            // FIX: Otomatis hilangkan tooltip setelah drop/cancel
+            setSelectedItem(null); 
         }
     };
 
@@ -203,18 +206,19 @@ const InventorySection: React.FC = () => {
             <div
                 key={index}
                 ref={el => { if (el && !slotsRef.current.includes(el)) slotsRef.current.push(el); }}
-                // --- EVENTS ---
                 draggable={!!item}
                 onDragStart={(e) => handleDragStart(e, index)}
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, index)}
                 onClick={() => handleSlotClick(index)}
                 onMouseEnter={() => {
+                    // Hover Desktop only
                     if (!draggedIndex && pickedIndex === null && item && !isMobile) {
                         setSelectedItem(item);
                     }
                 }}
                 onMouseLeave={() => {
+                    // Hover Desktop only
                     if (!isMobile && pickedIndex === null) setSelectedItem(null);
                 }}
                 style={{
@@ -276,51 +280,63 @@ const InventorySection: React.FC = () => {
                     {pickedIndex !== null ? "SELECT DESTINATION..." : "INVENTORY"}
                 </h3>
 
-                {/* --- GRID ATAS (STORAGE 27 SLOTS) --- */}
-                <div style={{ 
-                    display: 'grid', 
-                    // LOGIKA PERBAIKAN: Desktop fix 9 kolom, Mobile auto-responsive
-                    gridTemplateColumns: isMobile ? 'repeat(auto-fill, minmax(40px, 1fr))' : 'repeat(9, 1fr)', 
-                    gap: '6px', padding: '12px', background: '#8B8B8B', border: '3px solid', borderColor: '#373737 #FFF #FFF #373737' 
-                }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(auto-fill, minmax(40px, 1fr))' : 'repeat(9, 1fr)', gap: '6px', padding: '12px', background: '#8B8B8B', border: '3px solid', borderColor: '#373737 #FFF #FFF #373737' }}>
                     {items.slice(0, 27).map((_, i) => renderSlot(i))}
                 </div>
 
-                {/* --- GRID BAWAH (HOTBAR 9 SLOTS) --- */}
-                <div style={{ 
-                    display: 'grid', 
-                    // LOGIKA PERBAIKAN: Harus sama persis dengan atas agar sejajar
-                    gridTemplateColumns: isMobile ? 'repeat(auto-fill, minmax(40px, 1fr))' : 'repeat(9, 1fr)', 
-                    gap: '6px', padding: '12px', marginTop: '10px', background: '#8B8B8B', border: '3px solid', borderColor: '#373737 #FFF #FFF #373737' 
-                }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(auto-fill, minmax(40px, 1fr))' : 'repeat(9, 1fr)', gap: '6px', padding: '12px', marginTop: '10px', background: '#8B8B8B', border: '3px solid', borderColor: '#373737 #FFF #FFF #373737' }}>
                     {items.slice(27, 36).map((_, i) => renderSlot(i + 27))}
                 </div>
             </div>
 
-            {/* Tooltip */}
+            {/* --- TOOLTIP FIX --- */}
             {selectedItem && !draggedIndex && (
                 <div style={isMobile ? {
                     position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
-                    background: 'rgba(16, 0, 16, 0.98)', border: '4px solid #2e004f', padding: '16px',
-                    zIndex: 9999, pointerEvents: 'auto', minWidth: '280px', maxWidth: '95%',
+                    background: 'rgba(16, 0, 16, 0.98)', border: '4px solid #2e004f', 
+                    // FIX: Ukuran Padding & Width dikecilkan untuk Mobile
+                    padding: '10px', 
+                    zIndex: 9999, pointerEvents: 'auto', 
+                    minWidth: '220px', maxWidth: '90%',
                     boxShadow: '6px 6px 0px rgba(0,0,0,0.5)', borderRadius: '8px'
                 } : {
                     position: 'fixed', top: mousePos.y, left: mousePos.x,
-                    background: 'rgba(16, 0, 16, 0.98)', border: '4px solid #2e004f', padding: '16px',
-                    zIndex: 9999, pointerEvents: 'none', minWidth: '250px', maxWidth: '350px',
+                    background: 'rgba(16, 0, 16, 0.98)', border: '4px solid #2e004f', 
+                    padding: '16px',
+                    zIndex: 9999, pointerEvents: 'none', 
+                    minWidth: '250px', maxWidth: '350px',
                     boxShadow: '6px 6px 0px rgba(0,0,0,0.5)', borderRadius: '4px'
                 }}>
-                    <div style={{ color: selectedItem.rarity === 'Legendary' ? '#FFAA00' : selectedItem.rarity === 'Epic' ? '#A335EE' : selectedItem.rarity === 'Rare' ? '#0070DD' : '#FFFFFF', fontFamily: '"Press Start 2P", cursive', fontSize: '1.1rem', marginBottom: '10px', lineHeight: '1.4', textShadow: '3px 3px 0 #000' }}>
+                    <div style={{ 
+                        color: selectedItem.rarity === 'Legendary' ? '#FFAA00' : selectedItem.rarity === 'Epic' ? '#A335EE' : selectedItem.rarity === 'Rare' ? '#0070DD' : '#FFFFFF', 
+                        fontFamily: '"Press Start 2P", cursive', 
+                        // FIX: Font Size Judul Responsive
+                        fontSize: isMobile ? '0.9rem' : '1.1rem', 
+                        marginBottom: '10px', lineHeight: '1.4', textShadow: '3px 3px 0 #000' 
+                    }}>
                         {selectedItem.name} {pickedIndex !== null && <span style={{fontSize: '0.7rem', color: '#FFFF00', marginLeft: '5px'}}>(MOVING...)</span>}
                     </div>
-                    <div style={{ color: '#AAAAAA', fontSize: '0.9rem', fontStyle: 'italic', marginBottom: '12px', fontFamily: 'monospace' }}>
+                    
+                    <div style={{ 
+                        color: '#AAAAAA', 
+                        // FIX: Font Size Type Responsive
+                        fontSize: isMobile ? '0.75rem' : '0.9rem', 
+                        fontStyle: 'italic', marginBottom: '12px', fontFamily: 'monospace' 
+                    }}>
                         {selectedItem.type}
                     </div>
-                    <div style={{ color: '#CCCCCC', fontSize: '1rem', lineHeight: '1.5', fontFamily: 'monospace' }}>
+                    
+                    <div style={{ 
+                        color: '#CCCCCC', 
+                        // FIX: Font Size Desc Responsive
+                        fontSize: isMobile ? '0.85rem' : '1rem', 
+                        lineHeight: '1.5', fontFamily: 'monospace' 
+                    }}>
                         {selectedItem.desc}
                     </div>
+                    
                     {isMobile && pickedIndex !== null && (
-                         <div style={{ marginTop: '10px', color: '#FFFF00', fontSize: '0.8rem', fontStyle: 'italic' }}>
+                         <div style={{ marginTop: '10px', color: '#FFFF00', fontSize: '0.7rem', fontStyle: 'italic' }}>
                             &gt; Tap another slot to move
                         </div>
                     )}
