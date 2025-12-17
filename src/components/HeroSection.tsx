@@ -169,3 +169,4 @@ const HeroSection: React.FC = () => {
 };
 
 export default HeroSection;
+useGLTF.preload('/models/steve_rigged.glb');

@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense, lazy } from 'react'
 import NetherPortalScene from '../components/NetherPortalScene'
 import PortalTransition from '../components/PortalTransition'
-import HeroSection from '../components/HeroSection'
-import AboutSection from '../components/AboutSection'
-import InventorySection from '../components/InventorySection'
-import QuestLogSection from '../components/QuestLogSection'
-import MinecraftFooter from '../components/MinecraftFooter'
+
+const HeroSection = lazy(() => import('../components/HeroSection'));
+const AboutSection = lazy(() => import('../components/AboutSection'));
+const InventorySection = lazy(() => import('../components/InventorySection'));
+const QuestLogSection = lazy(() => import('../components/QuestLogSection'));
+const MinecraftFooter = lazy(() => import('../components/MinecraftFooter'));
 
 
 function App() {
@@ -67,13 +68,13 @@ function App() {
                     setIsZooming={setIsZooming}
                 />
             ) : (
-                <>
+                <Suspense fallback={<div style={{color:'white', textAlign:'center', paddingTop:'20%'}}>Loading World...</div>}>
                     <HeroSection />
                     <AboutSection />
                     <InventorySection />
                     <QuestLogSection />
                     <MinecraftFooter/>
-                </>
+                </Suspense>
             )}
         </>
     )
