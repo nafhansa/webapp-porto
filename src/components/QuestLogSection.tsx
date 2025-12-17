@@ -70,6 +70,12 @@ const quests: QuestData[] = [
 // ==========================================
 const QuestLogSection: React.FC = () => {
     const [selectedQuest, setSelectedQuest] = useState<QuestData>(quests[0]);
+    const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+    useEffect(() => {
+        const onResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
     
     const sectionRef = useRef<HTMLElement>(null);
     const bookRef = useRef<HTMLDivElement>(null);
@@ -158,16 +164,16 @@ const QuestLogSection: React.FC = () => {
             >
                 {/* PAGE 1: QUEST LIST (LEFT) */}
                 <div style={{
-                    flex: '1 1 350px', // Responsive width
+                    flex: isMobile ? '1 1 100%' : '1 1 350px', // Responsive width
                     background: '#f2e8d5', // Warna Kertas Parchment
                     backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px)', // Garis tulis tipis
                     backgroundSize: '100% 2rem',
                     padding: '40px 30px',
                     minHeight: '600px',
-                    borderRadius: '4px 0 0 4px',
-                    borderRight: '1px solid #d3c1a5', 
+                    borderRadius: isMobile ? '4px' : '4px 0 0 4px',
+                    borderRight: isMobile ? 'none' : '1px solid #d3c1a5', 
                     position: 'relative',
-                    boxShadow: 'inset -30px 0 40px -20px rgba(0,0,0,0.2)' // Bayangan lipatan tengah
+                    boxShadow: isMobile ? 'none' : 'inset -30px 0 40px -20px rgba(0,0,0,0.2)' // Bayangan lipatan tengah
                 }}>
                     <h3 style={{
                         fontFamily: '"Press Start 2P", cursive',
@@ -237,13 +243,13 @@ const QuestLogSection: React.FC = () => {
                 {/* PAGE 2: QUEST DETAILS (RIGHT) */}
                 <div
                     style={{
-                        flex: '1 1 350px',
+                        flex: isMobile ? '1 1 100%' : '1 1 350px',
                         background: '#f2e8d5',
                         padding: '40px 30px',
                         minHeight: '600px',
-                        borderRadius: '0 4px 4px 0',
+                        borderRadius: isMobile ? '4px' : '0 4px 4px 0',
                         position: 'relative',
-                        boxShadow: 'inset 30px 0 40px -20px rgba(0,0,0,0.15)' // Bayangan lipatan tengah
+                        boxShadow: isMobile ? 'none' : 'inset 30px 0 40px -20px rgba(0,0,0,0.15)' // Bayangan lipatan tengah
                     }}
                 >
                     <div ref={rightPageContentRef}>

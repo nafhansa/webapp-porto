@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -6,6 +6,12 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger);
 
 const AboutSection: React.FC = () => {
+    const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+    useEffect(() => {
+        const onResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
     const sectionRef = useRef<HTMLElement>(null);
     const titleRef = useRef<HTMLHeadingElement>(null);
     const avatarBoxRef = useRef<HTMLDivElement>(null);
@@ -140,17 +146,17 @@ const AboutSection: React.FC = () => {
                 <div
                     ref={avatarBoxRef}
                     style={{
-                        flex: '1 1 400px',
+                        flex: isMobile ? '1 1 100%' : '1 1 400px',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '20px',
-                        transform: 'translateX(-50px)'
+                        transform: isMobile ? 'none' : 'translateX(-50px)'
                     }}>
                     <div style={{
-                        width: '300px',
-                        height: '300px',
+                        width: isMobile ? '220px' : '300px',
+                        height: isMobile ? '220px' : '300px',
                         background: '#000',
                         border: '4px solid #8b8b8b',
                         display: 'flex',
@@ -199,25 +205,28 @@ const AboutSection: React.FC = () => {
                 </div>
 
                 {/* --- KOLOM KANAN (STATS) --- */}
-                <div
-                    ref={statsBoxRef}
-                    style={{
-                        flex: '1 1 400px',
+                    <div
+                        ref={statsBoxRef}
+                        style={{
+                        flex: isMobile ? '1 1 100% auto' : '1 1 400px',
+                        width: isMobile ? '75%' : '100%',
                         background: 'rgba(0,0,0,0.3)',
-                        padding: '30px',
+                        padding: isMobile ? '20px' : '30px',
                         border: '4px solid #555',
                         boxShadow: '8px 8px 0 rgba(0,0,0,0.5)',
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'center',
-                        transform: 'translateX(-17px)'
+                        transform: isMobile ? 'none' : 'translateX(-17px)',
+                        maxWidth: isMobile ? '560px' : 'none',
+                        margin: isMobile ? '0 auto' : undefined
                     }}>
 
                     {/* HEALTH BAR */}
                     <div style={{ marginBottom: '20px' }}>
                         <p style={{ marginBottom: '5px', color: '#aaa', fontWeight: 'bold' }}>HEALTH (STATUS)</p>
                         <div style={{ display: 'flex', gap: '5px' }}>
-                            {[...Array(19)].map((_, i) => (
+                            {[...Array(10)].map((_, i) => (
                                 <span
                                     key={i}
                                     ref={addToHeartsRef} // Menggunakan helper function

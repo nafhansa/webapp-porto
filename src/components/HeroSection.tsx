@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { useGLTF, useAnimations, PerspectiveCamera, ContactShadows, Float, Stars } from '@react-three/drei';
 import * as THREE from 'three';
@@ -53,6 +53,13 @@ function SteveModel({ scale = 0.035 }: SteveProps) {
 }
 
 const HeroSection: React.FC = () => {
+    // simple hook local to file to detect mobile width
+    const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+    useEffect(() => {
+        const onResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
     return (
         // 1. BACKGROUND DIGANTI GELAP (MALAM)
         <div id="spawn-point"
@@ -61,7 +68,7 @@ const HeroSection: React.FC = () => {
             {/* UI Overlay */}
             <div style={{
                 position: 'absolute',
-                top: '5%',
+                top: isMobile ? '15%' : '5%',
                 left: '50%',
                 transform: 'translateX(-50%)',
                 zIndex: 10,
@@ -93,8 +100,8 @@ const HeroSection: React.FC = () => {
                 </p>
             </div>
 
-            <Canvas shadows dpr={[1, 2]}>
-                <PerspectiveCamera makeDefault position={[0, 1, 12]} fov={50} />
+                <Canvas shadows dpr={[1, 2]}>
+                <PerspectiveCamera makeDefault position={[0, 1, isMobile ? 18 : 12]} fov={50} />
 
                 {/* 2. STARS (BINTANG) TANPA SKY */}
                 <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />

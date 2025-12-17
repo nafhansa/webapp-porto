@@ -1,6 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const MinecraftFooter: React.FC = () => {
+    const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+    useEffect(() => {
+        const onResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
     
     // Data Social Media
     const socialLinks = [
@@ -43,7 +49,7 @@ const MinecraftFooter: React.FC = () => {
                     radial-gradient(circle at 50% 50%, rgba(255,255,255,0.02) 5%, transparent 5%)
                 `, // Tekstur Noise Tanah
                 backgroundSize: '20px 20px, 40px 40px',
-                padding: '60px 20px',
+                padding: isMobile ? '30px 20px' : '60px 20px',
                 color: '#bbb',
                 display: 'flex',
                 justifyContent: 'center'
@@ -58,7 +64,7 @@ const MinecraftFooter: React.FC = () => {
                 }}>
                     
                     {/* KOLOM 1: Brand / Server Info */}
-                    <div style={{ flex: '1 1 250px' }}>
+                    <div style={{ flex: isMobile ? '1 1 100%' : '1 1 250px' }}>
                         <h3 style={{ 
                             fontFamily: '"Press Start 2P", cursive', 
                             color: '#fff', 
@@ -78,7 +84,7 @@ const MinecraftFooter: React.FC = () => {
                     </div>
 
                     {/* KOLOM 2: Warp Points (Navigation) */}
-                    <div style={{ flex: '1 1 150px' }}>
+                    <div style={{ flex: isMobile ? '1 1 100%' : '1 1 150px' }}>
                         <h4 style={{ 
                             fontFamily: '"Press Start 2P", cursive', 
                             color: '#fff', fontSize: '1rem', 
@@ -114,7 +120,7 @@ const MinecraftFooter: React.FC = () => {
                     </div>
 
                     {/* KOLOM 3: Connect (Socials) */}
-                    <div style={{ flex: '1 1 200px' }}>
+                    <div style={{ flex: isMobile ? '1 1 100%' : '1 1 200px' }}>
                         <h4 style={{ 
                             fontFamily: '"Press Start 2P", cursive', 
                             color: '#fff', fontSize: '1rem', 
