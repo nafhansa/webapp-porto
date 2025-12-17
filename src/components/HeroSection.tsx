@@ -104,7 +104,15 @@ const HeroSection: React.FC = () => {
                 <PerspectiveCamera makeDefault position={[0, 1, isMobile ? 18 : 12]} fov={50} />
 
                 {/* 2. STARS (BINTANG) TANPA SKY */}
-                <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
+                <Stars 
+                    radius={100} 
+                    depth={50} 
+                    count={isMobile ? 1500 : 3000} 
+                    factor={4} 
+                    saturation={0} 
+                    fade 
+                    speed={1} 
+                />
 
                 {/* 3. LIGHTING MALAM (Moonlight) */}
                 <ambientLight intensity={0.3} />
@@ -127,6 +135,7 @@ const HeroSection: React.FC = () => {
                         opacity={0.6}
                         scale={10}
                         blur={2}
+                        resolution={isMobile ? 128 : 256}
                         far={2}
                     />
                 </Suspense>
