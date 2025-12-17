@@ -243,7 +243,7 @@ const AboutSection: React.FC = () => {
                     <div style={{ marginBottom: '20px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                             <p style={{ marginBottom: '5px', color: '#aaa', fontWeight: 'bold' }}>EXPERIENCE ON CODING</p>
-                            <span style={{ fontFamily: '"Press Start 2P", cursive', color: '#55ff55', fontSize: '1.5rem' }}>
+                            <span style={{ fontFamily: '"Press Start 2P", cursive', color: '#55ff55', fontSize: isMobile ? '0.8rem' : '1.5rem' }}>
                                 YEAR {stats.year}
                             </span>
                         </div>
