@@ -88,7 +88,12 @@ const QuestLogSection: React.FC = () => {
         if (rightPageContentRef.current) {
             gsap.fromTo(rightPageContentRef.current,
                 { opacity: 0, y: 5 },
-                { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }
+                { opacity: 1, 
+                    y: 0, 
+                    duration: 0.3, 
+                    ease: "power2.out" ,
+                    overwrite: "auto"
+                }
             );
         }
     }, [selectedQuest]);
@@ -133,23 +138,7 @@ const QuestLogSection: React.FC = () => {
                 overflow: 'hidden'
             }}
         >
-            {/* 3. OPTIMASI CSS UNTUK BUTTON (GPU ACCELERATED) */}
-            <style>{`
-                .warp-btn {
-                    background: #8B4513 !important;
-                    box-shadow: 0 6px 0 #4e270a !important;
-                    transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.2s ease !important;
-                    transform: translateY(0);
-                    will-change: transform, box-shadow;
-                }
-                .warp-btn:hover {
-                    background: #9e5219 !important;
-                }
-                .warp-btn:active {
-                    transform: translateY(6px) !important;
-                    box-shadow: 0 0 0 #4e270a !important;
-                }
-            `}</style>
+            {/* Button styles moved to src/index.css for global stylesheet */}
 
             <h2 id="quest-log" style={{
                 fontFamily: '"Press Start 2P", cursive',
@@ -239,7 +228,7 @@ const QuestLogSection: React.FC = () => {
                     position: 'relative',
                     boxShadow: isMobile ? 'none' : 'inset 30px 0 40px -20px rgba(0,0,0,0.15)'
                 }}>
-                    <div ref={rightPageContentRef}>
+                    <div ref={rightPageContentRef} className="quest-detail-container">
                         {selectedQuest.status === 'COMPLETED' && (
                             <div style={{
                                 position: 'absolute', top: '30px', right: '30px',

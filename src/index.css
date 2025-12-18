@@ -37,3 +37,38 @@ body {
 
   .book-binding { display: none !important; }
 }
+
+/* =========================================
+   QUEST LOG: Button styles moved from
+   src/components/QuestLogSection.tsx
+   ========================================= */
+.warp-btn {
+  background: #8B4513 !important;
+  box-shadow: 0 6px 0 #4e270a !important;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.2s ease !important;
+  transform: translateY(0);
+  will-change: transform, box-shadow;
+}
+.warp-btn:hover {
+  background: #9e5219 !important;
+}
+.warp-btn:active {
+  transform: translateY(6px) !important;
+  box-shadow: 0 0 0 #4e270a !important;
+}.quest-detail-container {
+  will-change: transform, opacity;
+}
+
+.quest-item {
+  /* Agar klik terasa instan */
+  touch-action: manipulation;
+}
+
+.quest-detail-container {
+  will-change: transform, opacity;
+}
+
+.quest-item {
+  /* Agar klik terasa instan */
+  touch-action: manipulation;
+}
