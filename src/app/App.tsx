@@ -1,7 +1,7 @@
 import { useState, useEffect, Suspense, lazy } from 'react'
-import NetherPortalScene from '../components/NetherPortalScene'
 import PortalTransition from '../components/PortalTransition'
 
+const NetherPortalScene = lazy(() => import('../components/NetherPortalScene'));
 const HeroSection = lazy(() => import('../components/HeroSection'));
 const AboutSection = lazy(() => import('../components/AboutSection'));
 const InventorySection = lazy(() => import('../components/InventorySection'));
@@ -57,10 +57,10 @@ function App() {
     }, [hasEntered])
 
     return (
-        <>
-            {/* PortalTransition diletakkan di level paling atas agar tetap ada saat pergantian scene */}
-            <PortalTransition isZooming={isZooming} />
+    <>
+        <PortalTransition isZooming={isZooming} />
 
+        <Suspense fallback={<div style={{color:'white', textAlign:'center', paddingTop:'20%', fontFamily:'monospace'}}>GENERATING WORLD...</div>}>
             {!hasEntered ? (
                 <NetherPortalScene
                     onEnter={() => setHasEntered(true)}
@@ -68,16 +68,17 @@ function App() {
                     setIsZooming={setIsZooming}
                 />
             ) : (
-                <Suspense fallback={<div style={{color:'white', textAlign:'center', paddingTop:'20%'}}>Loading World...</div>}>
+                <>
                     <HeroSection />
                     <AboutSection />
                     <InventorySection />
                     <QuestLogSection />
                     <MinecraftFooter/>
-                </Suspense>
+                </>
             )}
-        </>
-    )
+        </Suspense>
+    </>
+)
 }
 
 export default App
