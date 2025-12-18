@@ -5,28 +5,33 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   build: {
-    chunkSizeWarningLimit: 1000, 
-    // AKTIFKAN INI: Menginstruksikan Vite untuk membuat tag preload otomatis
-    modulePreload: {
-      polyfill: true,
-    },
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks(id) {
+          // JANGAN pisahkan react atau react-dom ke chunk lain!
           if (id.includes('node_modules')) {
-          // Pisahkan Bloom & EffectComposer karena hanya dipakai di Nether
-          if (id.includes('@react-three/postprocessing') || id.includes('postprocessing')) {
-            return 'postprocessing-bundle';
-          }
-          // Sisanya tetap di three-bundle
-          if (id.includes('three') || id.includes('@react-three')) {
-            return 'three-bundle';
-          }
-          if (id.includes('framer-motion') || id.includes('gsap')) {
-            return 'animations';
+            
+            // 1. Pisahkan Three.js & kawan-kawan (Tanpa React)
+            if (
+              id.includes('three') || 
+              id.includes('@react-three') || 
+              id.includes('maath')
+            ) {
+              return 'three-bundle';
+            }
+
+            // 2. Pisahkan Postprocessing
+            if (id.includes('postprocessing')) {
+              return 'postprocessing-bundle';
+            }
+
+            // 3. Animasi
+            if (id.includes('framer-motion') || id.includes('gsap')) {
+              return 'animations';
+            }
           }
         }
-      }
       }
     }
   }
