@@ -5,30 +5,26 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   build: {
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 2000, // Kita naikkan limitnya karena bundle 3D pasti besar
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // JANGAN pisahkan react atau react-dom ke chunk lain!
           if (id.includes('node_modules')) {
             
-            // 1. Pisahkan Three.js & kawan-kawan (Tanpa React)
+            // SATUKAN SEMUA GRAFIS (Three, Fiber, Drei, Postprocessing)
+            // Ini mencegah error "Cannot access before initialization"
             if (
               id.includes('three') || 
               id.includes('@react-three') || 
+              id.includes('postprocessing') || 
               id.includes('maath')
             ) {
-              return 'three-bundle';
+              return 'vendor-3d'; 
             }
 
-            // 2. Pisahkan Postprocessing
-            if (id.includes('postprocessing')) {
-              return 'postprocessing-bundle';
-            }
-
-            // 3. Animasi
+            // Animasi (Framer Motion / GSAP) boleh dipisah karena mereka mandiri
             if (id.includes('framer-motion') || id.includes('gsap')) {
-              return 'animations';
+              return 'vendor-animations';
             }
           }
         }
