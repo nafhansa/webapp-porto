@@ -14,23 +14,19 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            // 1. PISAHKAN THREE.JS & TEMAN-TEMANNYA 
-            // Tambahkan @react-spring atau library math jika ada agar masuk ke bundle yang sama
-            if (
-              id.includes('three') || 
-              id.includes('@react-three') || 
-              id.includes('maath') || 
-              id.includes('postprocessing')
-            ) {
-              return 'three-bundle';
-            }
-
-            // 2. Deteksi Framer Motion / GSAP
-            if (id.includes('framer-motion') || id.includes('gsap')) {
-              return 'animations';
-            }
+          // Pisahkan Bloom & EffectComposer karena hanya dipakai di Nether
+          if (id.includes('@react-three/postprocessing') || id.includes('postprocessing')) {
+            return 'postprocessing-bundle';
+          }
+          // Sisanya tetap di three-bundle
+          if (id.includes('three') || id.includes('@react-three')) {
+            return 'three-bundle';
+          }
+          if (id.includes('framer-motion') || id.includes('gsap')) {
+            return 'animations';
           }
         }
+      }
       }
     }
   }

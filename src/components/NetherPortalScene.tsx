@@ -2,7 +2,16 @@ import { useRef, useState, useEffect, Suspense, Dispatch, SetStateAction } from 
 import { Canvas, useFrame } from '@react-three/fiber'
 import { useGLTF, OrbitControls, PerspectiveCamera, Preload, Html, ContactShadows, Sparkles, PositionalAudio } from '@react-three/drei'
 import { EffectComposer, Bloom } from '@react-three/postprocessing'
-import * as THREE from 'three'
+import { 
+  Mesh, 
+  MeshStandardMaterial, 
+  Color, 
+  Vector3, 
+  Group, 
+  AudioContext,
+  Material,
+  PositionalAudio as ThreePositionalAudio // Pakai alias agar tidak bentrok dengan komponen PositionalAudio dari Drei
+} from 'three';
 import { easing } from 'maath'
 
 // --- INTERFACES ---
@@ -20,32 +29,32 @@ interface NetherPortalSceneProps {
 // --- PORTAL MODEL COMPONENT ---
 function PortalModel({ isZooming, onEnter }: PortalModelProps) {
     const { scene } = useGLTF('/models/nether_portal.glb')
-    const portalMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null)
-    const autoRotateRef = useRef<THREE.Group | null>(null)
+    const portalMaterialRef = useRef<MeshStandardMaterial | null>(null)
+    const autoRotateRef = useRef<Group | null>(null)
     const zoomStartTimeRef = useRef<number | null>(null)
-    const startCameraPosRef = useRef<THREE.Vector3 | null>(null)
-    const startCameraTargetRef = useRef<THREE.Vector3 | null>(null)
-    const audioRef = useRef<THREE.PositionalAudio | null>(null)
+    const startCameraPosRef = useRef<Vector3 | null>(null)
+    const startCameraTargetRef = useRef<Vector3 | null>(null)
+    const audioRef = useRef<ThreePositionalAudio | null>(null)
 
     useEffect(() => {
         scene.traverse((child) => {
-            if ((child as THREE.Mesh).isMesh) {
-                const mesh = child as THREE.Mesh
+            if ((child as Mesh).isMesh) {
+                const mesh = child as Mesh
                 const mat = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material
 
-                if (mat instanceof THREE.MeshStandardMaterial) {
+                if (mat instanceof MeshStandardMaterial) {
                     mat.roughness = 0.8
                     mat.metalness = 0.1
                 }
 
                 if (mesh.name.toLowerCase().includes('portal') || mesh.name.toLowerCase().includes('fluid')) {
-                    const portalMat = new THREE.MeshStandardMaterial({
-                        color: new THREE.Color('#ff00ff'),
-                        emissive: new THREE.Color('#a020f0'),
+                    const portalMat = new MeshStandardMaterial({
+                        color: new Color('#ff00ff'),
+                        emissive: new Color('#a020f0'),
                         emissiveIntensity: 15,
                         toneMapped: false,
                     })
-                    mesh.material = portalMat as unknown as THREE.Material
+                    mesh.material = portalMat as unknown as Material
                     portalMaterialRef.current = portalMat
                 }
             }
@@ -69,25 +78,25 @@ function PortalModel({ isZooming, onEnter }: PortalModelProps) {
             if (zoomStartTimeRef.current === null) {
                 zoomStartTimeRef.current = state.clock.elapsedTime
                 startCameraPosRef.current = state.camera.position.clone()
-                startCameraTargetRef.current = new THREE.Vector3(0, 4.3, 0)
+                startCameraTargetRef.current = new Vector3(0, 4.3, 0)
             }
 
             const elapsed = state.clock.elapsedTime - zoomStartTimeRef.current
             const duration = 2.5
             const progress = Math.min(elapsed / duration, 1)
 
-            const p0 = startCameraPosRef.current || new THREE.Vector3(0, 4.3, 12)
-            const p1 = new THREE.Vector3(0, 4.3, 12)
-            const p2 = new THREE.Vector3(0, 4.3, -5)
+            const p0 = startCameraPosRef.current || new Vector3(0, 4.3, 12)
+            const p1 = new Vector3(0, 4.3, 12)
+            const p2 = new Vector3(0, 4.3, -5)
 
-            const t0 = startCameraTargetRef.current || new THREE.Vector3(0, 4.3, 0)
-            const t1 = new THREE.Vector3(0, 4.3, 0)
-            const t2 = new THREE.Vector3(0, 4.3, -20)
+            const t0 = startCameraTargetRef.current || new Vector3(0, 4.3, 0)
+            const t1 = new Vector3(0, 4.3, 0)
+            const t2 = new Vector3(0, 4.3, -20)
 
             const t = progress * progress * (3 - 2 * progress)
             const invT = 1 - t
-            const pos = new THREE.Vector3().copy(p0).multiplyScalar(invT * invT).add(p1.clone().multiplyScalar(2 * invT * t)).add(p2.clone().multiplyScalar(t * t))
-            const target = new THREE.Vector3().copy(t0).multiplyScalar(invT * invT).add(t1.clone().multiplyScalar(2 * invT * t)).add(t2.clone().multiplyScalar(t * t))
+            const pos = new Vector3().copy(p0).multiplyScalar(invT * invT).add(p1.clone().multiplyScalar(2 * invT * t)).add(p2.clone().multiplyScalar(t * t))
+            const target = new Vector3().copy(t0).multiplyScalar(invT * invT).add(t1.clone().multiplyScalar(2 * invT * t)).add(t2.clone().multiplyScalar(t * t))
 
             state.camera.position.copy(pos)
             state.camera.lookAt(target)
@@ -136,8 +145,8 @@ export default function NetherPortalScene({ onEnter, isZooming, setIsZooming }: 
 
     useEffect(() => {
         const handleInteraction = () => {
-            if (THREE.AudioContext.getContext().state === 'suspended') {
-                THREE.AudioContext.getContext().resume()
+            if (AudioContext.getContext().state === 'suspended') {
+                AudioContext.getContext().resume()
             }
         }
         window.addEventListener('click', handleInteraction)

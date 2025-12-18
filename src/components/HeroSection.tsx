@@ -1,7 +1,9 @@
 import React, { Suspense, useEffect, useState, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { useGLTF, useAnimations, PerspectiveCamera, ContactShadows, Float, Stars } from '@react-three/drei';
-import * as THREE from 'three';
+import { 
+  Mesh,
+} from 'three';
 
 interface SteveProps {
     scale?: number;
@@ -26,7 +28,7 @@ function SteveModel({ scale = 0.035 }: SteveProps) {
             walkAnim?.reset().play();
         }
         scene.traverse((child) => {
-            if ((child as THREE.Mesh).isMesh) {
+            if ((child as Mesh).isMesh) {
                 child.castShadow = true;
                 child.receiveShadow = true;
             }
