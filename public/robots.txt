@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Ganti domain di bawah ini dengan domain aslimu
+Sitemap: https://www.nafhan.space/sitemap.xml
