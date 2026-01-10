@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import ProjectCard, { ProjectCardData } from './ProjectCard';
 
 // ==========================================
 // 2. GLOBAL GSAP CONFIG (Cegah Reflow)
@@ -13,76 +14,101 @@ ScrollTrigger.config({
   syncInterval: 999 
 });
 
-interface QuestData {
-    id: number;
-    title: string;
-    type: string;
-    difficulty: string;
-    desc: string;
-    rewards: string[];
-    link: string;
-    status: "COMPLETED" | "IN PROGRESS";
-}
-
-const quests: QuestData[] = [
+// Project data for enchanted cards
+const projects: ProjectCardData[] = [
     {
         id: 1,
         title: "Trufman Realm",
-        type: "MAIN QUEST",
-        difficulty: "⭐⭐⭐⭐",
-        status: "COMPLETED",
-        desc: "A strategic web platform deployed at trufman.nafhan.space. Constructed the frontend armor using React and Tailwind CSS, while securing vital data within a robust PostgreSQL vault.",
-        rewards: [
+        description: "A strategic web platform deployed at trufman.nafhan.space. Constructed the frontend armor using React and Tailwind CSS, while securing vital data within a robust PostgreSQL vault.",
+        image: "/trufman.png",
+        link: "https://trufman.nafhan.space",
+        techStack: [
             "https://cdn.simpleicons.org/react/61DAFB",       
             "https://cdn.simpleicons.org/tailwindcss/06B6D4", 
             "https://cdn.simpleicons.org/postgresql/4169E1"   
-        ],
-        link: "https://trufman.nafhan.space"
+        ]
     },
     {
         id: 2,
+        title: "Job Tracker",
+        description: "Career management tool...",
+        image: "/job_tracker.png",
+        link: "https://jobtrackerapp.site",
+        techStack: [
+            "https://cdn.simpleicons.org/nextdotjs/000000",
+            "https://cdn.simpleicons.org/radixui/161618",
+            "https://cdn.simpleicons.org/tailwindcss/06B6D4",
+            "https://cdn.simpleicons.org/paypal/00457C",
+            "/google-firebase-icon.svg",
+            "/google.png",
+            "https://cdn.simpleicons.org/react/61DAFB",
+            "https://cdn.simpleicons.org/vercel/000000"
+        ]
+    },
+    {
+        id: 3,
+        title: "Future Defined",
+        description: "WebGL specific experience...",
+        image: "/future.png",
+        link: "https://miki-eta.vercel.app",
+        techStack: [
+            "https://cdn.simpleicons.org/gsap/88CE02",
+            "https://cdn.simpleicons.org/nextdotjs/000000",
+            "https://cdn.simpleicons.org/react/61DAFB",
+            "/threejs.svg",
+            "https://cdn.simpleicons.org/vercel/000000",
+            "https://cdn.simpleicons.org/tailwindcss/06B6D4"
+        ]
+    },
+    {
+        id: 4,
         title: "Campus Compass",
-        type: "GUILD REQUEST",
-        difficulty: "⭐⭐⭐⭐⭐",
-        status: "COMPLETED",
-        desc: "A guidance system for academic adventurers at campuscompass.id. The frontend resides on Vercel lands, while backend logic operates on Railway tracks. Powered by React, Tailwind, and a MongoDB knowledge base.",
-        rewards: [
+        description: "Academic pathfinder...",
+        image: "/campuscompass.png",
+        link: "https://campuscompass.id",
+        techStack: [
             "https://cdn.simpleicons.org/vercel/000000",      
             "https://cdn.simpleicons.org/railway/0B0D17",     
             "https://cdn.simpleicons.org/react/61DAFB",       
             "https://cdn.simpleicons.org/tailwindcss/06B6D4", 
             "https://cdn.simpleicons.org/mongodb/47A248"      
-        ],
-        link: "https://campuscompass.id"
-    },
-    {
-        id: 3,
-        title: "Portfolio V1",
-        type: "SIDE QUEST",
-        difficulty: "⭐⭐",
-        status: "COMPLETED",
-        desc: "The very first scroll. A simple static site created to document early journey logs. Built with pure HTML/CSS before acquiring the React framework skill.",
-        rewards: [
-            "https://cdn.simpleicons.org/html5/E34F26",
-            "https://cdn.simpleicons.org/css3/1572B6",
-        ],
-        link: "#"
+        ]
     }
 ];
 
 const QuestLogSection: React.FC = () => {
-    const [selectedQuest, setSelectedQuest] = useState<QuestData>(quests[0]);
     const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+    const [currentIndex, setCurrentIndex] = useState<number>(0);
     
     const sectionRef = useRef<HTMLElement>(null);
     const bookRef = useRef<HTMLDivElement>(null);
     const rightPageContentRef = useRef<HTMLDivElement>(null);
+    const carouselRef = useRef<HTMLDivElement>(null);
+    const scrollTweenRef = useRef<gsap.core.Tween | null>(null);
 
     useEffect(() => {
-        const onResize = () => setIsMobile(window.innerWidth < 768);
+        let resizeTimeout: NodeJS.Timeout;
+        const onResize = () => {
+            clearTimeout(resizeTimeout);
+            const mobile = window.innerWidth < 768;
+            setIsMobile(mobile);
+            // Reset to current card position on resize (desktop)
+            if (!mobile) {
+                // Use a debounce to ensure resize is complete
+                resizeTimeout = setTimeout(() => {
+                    if (carouselRef.current) {
+                        scrollToIndex(currentIndex);
+                    }
+                }, 150);
+            }
+        };
         window.addEventListener('resize', onResize);
-        return () => window.removeEventListener('resize', onResize);
-    }, []);
+        return () => {
+            window.removeEventListener('resize', onResize);
+            clearTimeout(resizeTimeout);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentIndex]);
 
     useEffect(() => {
         if (rightPageContentRef.current) {
@@ -96,7 +122,68 @@ const QuestLogSection: React.FC = () => {
                 }
             );
         }
-    }, [selectedQuest]);
+    }, []);
+
+    // Initialize carousel position on mount (desktop only)
+    useEffect(() => {
+        if (!isMobile && carouselRef.current) {
+            // Small delay to ensure DOM is ready
+            setTimeout(() => {
+                scrollToIndex(0);
+            }, 100);
+        }
+    }, [isMobile]);
+
+    // Desktop carousel navigation
+    const goToSlide = (direction: 'prev' | 'next') => {
+        if (isMobile || !carouselRef.current) return;
+
+        const maxIndex = projects.length - 1;
+        let newIndex = currentIndex;
+
+        if (direction === 'next') {
+            newIndex = currentIndex >= maxIndex ? 0 : currentIndex + 1;
+        } else {
+            newIndex = currentIndex <= 0 ? maxIndex : currentIndex - 1;
+        }
+
+        setCurrentIndex(newIndex);
+        scrollToIndex(newIndex);
+    };
+
+    const scrollToIndex = (index: number) => {
+        if (!carouselRef.current || isMobile) return;
+
+        // Get container width
+        const container = carouselRef.current.parentElement;
+        if (!container) return;
+
+        const containerWidth = container.offsetWidth;
+        const gap = 40; // gap between cards (matches CSS)
+        // Card width matches CSS: calc(50% - 20px)
+        // So: 50% of container - 20px = (containerWidth / 2) - 20
+        const cardWidth = (containerWidth / 2) - 20;
+        
+        // Calculate position to center the active card
+        // Each card starts at: index * (cardWidth + gap)
+        // Center of card: index * (cardWidth + gap) + (cardWidth / 2)
+        // We want this center to align with container center
+        const cardStartPosition = index * (cardWidth + gap);
+        const cardCenterPosition = cardStartPosition + (cardWidth / 2);
+        const containerCenter = containerWidth / 2;
+        
+        // Scroll position: negative of (card center - container center)
+        const scrollX = -(cardCenterPosition - containerCenter);
+
+        // Smooth scroll animation
+        if (scrollTweenRef.current) scrollTweenRef.current.kill();
+        
+        scrollTweenRef.current = gsap.to(carouselRef.current, {
+            x: scrollX,
+            duration: 0.6,
+            ease: "power2.inOut"
+        });
+    };
 
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -155,7 +242,7 @@ const QuestLogSection: React.FC = () => {
             <div ref={bookRef} style={{
                 display: 'flex',
                 flexWrap: 'wrap',
-                maxWidth: '1100px',
+                maxWidth: isMobile ? '100%' : '1200px',
                 width: '100%',
                 background: '#5c3a21',
                 padding: '12px',
@@ -164,124 +251,200 @@ const QuestLogSection: React.FC = () => {
                 position: 'relative',
                 border: '2px solid #3e2716'
             }}>
-                {/* PAGE 1: LEFT */}
+                {/* PAGE 2: RIGHT - ENCHANTED CARDS GRID/CAROUSEL */}
                 <div style={{
-                    flex: isMobile ? '1 1 100%' : '1 1 350px',
+                    flex: '1 1 100%',
                     background: '#f2e8d5',
-                    backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px)',
-                    backgroundSize: '100% 2rem',
-                    padding: '40px 30px',
-                    minHeight: '600px',
-                    borderRadius: isMobile ? '4px' : '4px 0 0 4px',
-                    borderRight: isMobile ? 'none' : '1px solid #d3c1a5', 
+                    padding: isMobile ? '30px 20px' : '30px 40px',
+                    minHeight: isMobile ? '600px' : '580px',
+                    borderRadius: '4px',
                     position: 'relative',
-                    boxShadow: isMobile ? 'none' : 'inset -30px 0 40px -20px rgba(0,0,0,0.2)'
+                    boxShadow: 'inset 30px 0 40px -20px rgba(0,0,0,0.15)',
+                    overflow: isMobile ? 'auto' : 'hidden',
+                    maxHeight: isMobile ? '600px' : 'none',
                 }}>
-                    <h3 style={{
-                        fontFamily: '"Press Start 2P", cursive',
-                        fontSize: '1.2rem',
-                        color: '#4a3b2a',
-                        borderBottom: '4px double #8B4513',
-                        paddingBottom: '15px',
-                        marginBottom: '30px',
-                        textAlign: 'center'
-                    }}>Active Quests</h3>
-
-                    <ul style={{ listStyle: 'none', padding: 0 }}>
-                        {quests.map((quest) => (
-                            <li
-                                key={quest.id}
-                                onClick={() => setSelectedQuest(quest)}
-                                style={{
-                                    padding: '18px 15px',
-                                    marginBottom: '15px',
-                                    cursor: 'pointer',
-                                    background: selectedQuest.id === quest.id ? 'rgba(139, 69, 19, 0.15)' : 'transparent',
-                                    border: selectedQuest.id === quest.id ? '2px dashed #8B4513' : '2px solid transparent',
-                                    transform: selectedQuest.id === quest.id ? 'translateX(5px)' : 'translateX(0)',
-                                    transition: 'all 0.2s ease-in-out',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '15px',
-                                    borderRadius: '4px'
-                                }}
-                            >
-                                <span style={{ color: selectedQuest.id === quest.id ? '#8B4513' : '#aaa', fontSize: '1.2rem', fontFamily: '"Press Start 2P", cursive' }}>
-                                    {selectedQuest.id === quest.id ? '>' : '-'}
-                                </span>
-                                <div>
-                                    <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#3e2716', fontFamily: '"Press Start 2P", cursive', marginBottom: '6px' }}>{quest.title}</div>
-                                    <div style={{ fontSize: '0.85rem', color: '#776', fontWeight: 'bold' }}>[{quest.type}]</div>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-
-                {/* PAGE 2: RIGHT */}
-                <div style={{
-                    flex: isMobile ? '1 1 100%' : '1 1 350px',
-                    background: '#f2e8d5',
-                    padding: '40px 30px',
-                    minHeight: '600px',
-                    borderRadius: isMobile ? '4px' : '0 4px 4px 0',
-                    position: 'relative',
-                    boxShadow: isMobile ? 'none' : 'inset 30px 0 40px -20px rgba(0,0,0,0.15)'
-                }}>
-                    <div ref={rightPageContentRef} className="quest-detail-container">
-                        {selectedQuest.status === 'COMPLETED' && (
-                            <div style={{
-                                position: 'absolute', top: '30px', right: '30px',
-                                border: '6px solid #b30000', color: '#b30000',
-                                padding: '8px 14px', fontFamily: '"Press Start 2P", cursive',
-                                fontSize: '1rem', transform: 'rotate(-15deg)',
-                                opacity: 0.6, pointerEvents: 'none', mixBlendMode: 'multiply'
-                            }}>CLEARED</div>
-                        )}
-
-                        <h3 style={{ fontFamily: '"Press Start 2P", cursive', fontSize: '1.5rem', color: '#2c1e12', marginBottom: '15px', borderBottom: '2px solid #d3c1a5', paddingBottom: '15px' }}>
-                            {selectedQuest.title}
+                    <div ref={rightPageContentRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+                        <h3 style={{
+                            fontFamily: '"Press Start 2P", cursive',
+                            fontSize: isMobile ? '0.8rem' : '0.9rem',
+                            color: '#3e2716',
+                            marginBottom: '20px',
+                            textAlign: 'center',
+                            borderBottom: '4px double #8B4513',
+                            paddingBottom: '12px'
+                        }}>
+                            ENCHANTED EXPERIENCE
                         </h3>
-
-                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#665', marginBottom: '30px', fontSize: '1rem' }}>
-                            <span>Rank: <strong style={{color: '#8B4513'}}>{selectedQuest.type}</strong></span>
-                            <span>Diff: <span style={{ color: '#e67e22' }}>{selectedQuest.difficulty}</span></span>
-                        </div>
-
-                        <div style={{ marginBottom: '30px' }}>
-                            <h4 style={{ fontFamily: '"Press Start 2P", cursive', fontSize: '0.9rem', color: '#5c3a21', marginBottom: '10px' }}>MISSION BRIEF:</h4>
-                            <p style={{ lineHeight: '1.8', color: '#333', fontSize: '1.1rem', textAlign: 'justify' }}>{selectedQuest.desc}</p>
-                        </div>
-
-                        <div style={{ marginBottom: '40px' }}>
-                            <h4 style={{ fontFamily: '"Press Start 2P", cursive', fontSize: '0.9rem', color: '#5c3a21', marginBottom: '15px' }}>LOOT ACQUIRED:</h4>
-                            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                                {selectedQuest.rewards.map((url, i) => (
-                                    <div key={i} style={{ width: '48px', height: '48px', background: '#fff', padding: '8px', borderRadius: '8px', border: '2px solid #d3c1a5', boxShadow: '3px 3px 0 #cbb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <img src={url} alt="tech" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                                    </div>
+                        
+                        {/* Mobile: Scrollable Grid */}
+                        {isMobile ? (
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr',
+                                gap: '24px',
+                                justifyContent: 'center',
+                                alignItems: 'start',
+                                padding: '0 10px'
+                            }}>
+                                {projects.map((project, index) => (
+                                    <ProjectCard
+                                        key={project.id}
+                                        project={project}
+                                        index={index}
+                                    />
                                 ))}
                             </div>
-                        </div>
+                        ) : (
+                            /* Desktop: Carousel with Navigation Buttons */
+                            <>
+                                <div style={{
+                                    position: 'relative',
+                                    width: '100%',
+                                    overflow: 'hidden',
+                                    height: '520px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    padding: '15px 0',
+                                    justifyContent: 'center'
+                                }}>
+                                    <div
+                                        ref={carouselRef}
+                                        style={{
+                                            display: 'flex',
+                                            gap: '40px',
+                                            willChange: 'transform',
+                                        }}
+                                    >
+                                        {projects.map((project, index) => {
+                                            // Calculate card width to show 1.5 cards at a time
+                                            // Each card takes 50% of container (smaller to prevent cutting)
+                                            const cardWidth = 'calc(50% - 20px)';
+                                            return (
+                                                <div
+                                                    key={project.id}
+                                                    style={{
+                                                        flex: `0 0 ${cardWidth}`,
+                                                        maxWidth: cardWidth,
+                                                        minWidth: cardWidth,
+                                                        display: 'flex',
+                                                        justifyContent: 'center',
+                                                        alignItems: 'flex-start'
+                                                    }}
+                                                >
+                                                    <ProjectCard
+                                                        project={project}
+                                                        index={index}
+                                                    />
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
 
-                        {/* TOMBOL YANG SUDAH DIOPTIMASI */}
-                        <button
-                            className="warp-btn"
-                            onClick={() => window.open(selectedQuest.link, '_blank')}
-                            style={{
-                                color: '#fff',
-                                border: 'none',
-                                padding: '18px 30px',
-                                fontFamily: '"Press Start 2P", cursive',
-                                fontSize: '0.9rem',
-                                cursor: 'pointer',
-                                display: 'block',
-                                width: '100%',
-                                borderRadius: '8px',
-                            }}
-                        >
-                            WARP TO LOCATION
-                        </button>
+                                {/* Navigation Buttons */}
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    gap: '20px',
+                                    marginTop: '30px'
+                                }}>
+                                    <button
+                                        onClick={() => goToSlide('prev')}
+                                        className="warp-btn"
+                                        style={{
+                                            fontFamily: '"Press Start 2P", cursive',
+                                            fontSize: '0.7rem',
+                                            padding: '12px 24px',
+                                            cursor: 'pointer',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            color: '#fff',
+                                            background: '#8B4513',
+                                            boxShadow: '0 4px 0 #4e270a',
+                                            transition: 'all 0.1s ease',
+                                            transform: 'translateY(0)',
+                                        }}
+                                        onMouseDown={(e) => {
+                                            gsap.to(e.currentTarget, {
+                                                y: 4,
+                                                boxShadow: '0 0 0 #4e270a',
+                                                duration: 0.1
+                                            });
+                                        }}
+                                        onMouseUp={(e) => {
+                                            gsap.to(e.currentTarget, {
+                                                y: 0,
+                                                boxShadow: '0 4px 0 #4e270a',
+                                                duration: 0.1
+                                            });
+                                        }}
+                                    >
+                                        ◀ PREV
+                                    </button>
+                                    <button
+                                        onClick={() => goToSlide('next')}
+                                        className="warp-btn"
+                                        style={{
+                                            fontFamily: '"Press Start 2P", cursive',
+                                            fontSize: '0.7rem',
+                                            padding: '12px 24px',
+                                            cursor: 'pointer',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            color: '#fff',
+                                            background: '#8B4513',
+                                            boxShadow: '0 4px 0 #4e270a',
+                                            transition: 'all 0.1s ease',
+                                            transform: 'translateY(0)',
+                                        }}
+                                        onMouseDown={(e) => {
+                                            gsap.to(e.currentTarget, {
+                                                y: 4,
+                                                boxShadow: '0 0 0 #4e270a',
+                                                duration: 0.1
+                                            });
+                                        }}
+                                        onMouseUp={(e) => {
+                                            gsap.to(e.currentTarget, {
+                                                y: 0,
+                                                boxShadow: '0 4px 0 #4e270a',
+                                                duration: 0.1
+                                            });
+                                        }}
+                                    >
+                                        NEXT ▶
+                                    </button>
+                                </div>
+
+                                {/* Dots Indicator */}
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    gap: '10px',
+                                    marginTop: '20px'
+                                }}>
+                                    {projects.map((_, index) => (
+                                        <button
+                                            key={index}
+                                            onClick={() => {
+                                                setCurrentIndex(index);
+                                                scrollToIndex(index);
+                                            }}
+                                            style={{
+                                                width: currentIndex === index ? '24px' : '12px',
+                                                height: '12px',
+                                                borderRadius: '6px',
+                                                border: 'none',
+                                                background: currentIndex === index ? '#8B4513' : '#d3c1a5',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.3s ease',
+                                                padding: 0
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

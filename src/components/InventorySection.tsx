@@ -278,7 +278,7 @@ const InventorySection: React.FC = () => {
             <MinecraftGridBackground />
 
             <h2 ref={titleRef} style={{ fontFamily: '"Press Start 2P", cursive', fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', marginBottom: '40px', color: '#fff', textShadow: '4px 4px 0 #000', textAlign: 'center', borderBottom: '4px solid #555', paddingBottom: '10px', zIndex: 10, position: 'relative' }}>
-                TECH STACK INVENTORY
+                TECH STACK EXPERTISE
             </h2>
 
             <div ref={containerRef} style={{ background: '#C6C6C6', padding: '20px', border: '4px solid #000', boxShadow: 'inset 4px 4px 0px #FFF, inset -4px -4px 0px #555, 10px 10px 0px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '850px', width: '100%', zIndex: 10, position: 'relative' }}>

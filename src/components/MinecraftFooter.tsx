@@ -14,7 +14,7 @@ const NAV_LINKS = [
     { name: "Spawn Point", href: "#spawn-point" },
     { name: "Player Statistics", href: "#about" },
     { name: "Inventory", href: "#inventory" },
-    { name: "Quest Logs", href: "#quest-log" },
+    { name: "Project Logs", href: "#quest-log" },
 ];
 
 const MinecraftFooter: React.FC = () => {
