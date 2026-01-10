@@ -88,7 +88,7 @@ const HeroSection: React.FC = () => {
                     padding: '5px 10px',
                     borderRadius: '4px'
                 }}>
-                    &lt; Full Stack Developer /&gt;
+                    &lt; Full Stack Software Engineer /&gt;
                 </p>
             </div>
 
