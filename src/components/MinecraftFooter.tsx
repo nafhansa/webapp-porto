@@ -1,8 +1,5 @@
 import React, { useEffect, useState, memo } from 'react';
 
-// ==========================================
-// DATA DIPINDAH KE LUAR (Cegah Re-allocation)
-// ==========================================
 const SOCIAL_LINKS = [
     { name: "GitHub", url: "https://github.com/nafhansa", icon: "https://cdn.simpleicons.org/github/ffffff" },
     { name: "LinkedIn", url: "https://linkedin.com/in/nafhanshafy", icon: "https://cdn.simpleicons.org/linkedin/ffffff" },
@@ -34,7 +31,6 @@ const MinecraftFooter: React.FC = () => {
             display: 'flex', 
             flexDirection: 'column'
         }}>
-            {/* OPTIMASI CSS: Tetap di sini karena ini kunci performa GPU */}
             <style>{`
                 .footer-nav-link {
                     color: #bbb;
@@ -75,7 +71,6 @@ const MinecraftFooter: React.FC = () => {
                 }
             `}</style>
 
-            {/* 1. LAYER GRASS */}
             <div style={{
                 height: '24px',
                 width: '100%',
@@ -85,7 +80,6 @@ const MinecraftFooter: React.FC = () => {
                 backgroundSize: '8px 100%'
             }}></div>
 
-            {/* 2. LAYER DIRT */}
             <div style={{
                 backgroundColor: '#3b2512',
                 backgroundImage: `
@@ -173,7 +167,6 @@ const MinecraftFooter: React.FC = () => {
                 </div>
             </div>
 
-            {/* 3. LAYER BEDROCK */}
             <div style={{
                 backgroundColor: '#1a1a1a',
                 backgroundImage: `
@@ -196,5 +189,4 @@ const MinecraftFooter: React.FC = () => {
     );
 };
 
-// Bungkus dengan memo agar tidak re-render sia-sia
 export default memo(MinecraftFooter);

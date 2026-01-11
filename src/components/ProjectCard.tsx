@@ -25,7 +25,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index }) => {
 
         const card = cardRef.current;
         const ctx = gsap.context(() => {
-            // Entrance animation - staggered from opacity 0, y: 20
             const entranceDelay = index * 0.15;
             gsap.from(card, {
                 opacity: 0,
@@ -35,10 +34,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index }) => {
                 ease: "power2.out",
                 overwrite: "auto",
                 onComplete: () => {
-                    // Start floating animation after entrance completes
-                    const randomDuration = 2 + Math.random() * 1.5; // 2-3.5 seconds
+                    const randomDuration = 2 + Math.random() * 1.5;
                     const randomDelay = Math.random() * 0.5;
-                    const randomY = 3 + Math.random() * 4; // 3-7px movement
+                    const randomY = 3 + Math.random() * 4;
 
                     floatingTweenRef.current = gsap.to(card, {
                         y: -randomY,
@@ -51,7 +49,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index }) => {
                 }
             });
 
-            // Mouse move parallax - 3D tilt effect
             const handleMouseMove = (e: MouseEvent) => {
                 if (!card) return;
 
@@ -62,7 +59,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index }) => {
                 const centerX = rect.width / 2;
                 const centerY = rect.height / 2;
 
-                const rotateX = ((y - centerY) / centerY) * -8; // Max 8deg tilt
+                const rotateX = ((y - centerY) / centerY) * -8;
                 const rotateY = ((x - centerX) / centerX) * 8;
 
                 gsap.to(card, {
@@ -74,7 +71,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index }) => {
                 });
             };
 
-            // Mouse leave - reset rotation
             const handleMouseLeave = () => {
                 gsap.to(card, {
                     rotationX: 0,
@@ -84,9 +80,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index }) => {
                 });
             };
 
-            // Hover state - scale and glow
             const handleMouseEnter = () => {
-                // Pause floating animation on hover
                 if (floatingTweenRef.current) {
                     floatingTweenRef.current.pause();
                 }
@@ -97,7 +91,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index }) => {
                     ease: "power2.out"
                 });
 
-                // Add gold glow effect
                 if (card) {
                     card.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.6), 0 8px 16px rgba(0, 0, 0, 0.4)';
                 }
@@ -111,12 +104,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index }) => {
                     ease: "power2.out"
                 });
 
-                // Resume floating animation
                 if (floatingTweenRef.current) {
                     floatingTweenRef.current.resume();
                 }
 
-                // Remove glow effect
                 if (card) {
                     card.style.boxShadow = '';
                 }
@@ -139,7 +130,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index }) => {
         return () => ctx.revert();
     }, [index]);
 
-    // Create jagged pixel border using CSS clip-path
     const pixelBorderClipPath = `
         polygon(
             0% 4px, 4px 0%, calc(100% - 4px) 0%, 100% 4px,
@@ -176,7 +166,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index }) => {
                     transition: 'box-shadow 0.3s ease',
                 }}
             >
-                {/* Image Container */}
                 <div
                     ref={imageRef}
                     style={{
@@ -203,7 +192,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index }) => {
                     />
                 </div>
 
-                {/* Title */}
                 <h3
                     style={{
                         fontFamily: '"Press Start 2P", cursive',
@@ -219,7 +207,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index }) => {
                     {project.title}
                 </h3>
 
-                {/* Tech Stack Icons - "Loot" */}
                 <div
                     style={{
                         display: 'flex',
@@ -274,7 +261,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index }) => {
                     ))}
                 </div>
 
-                {/* Decorative corner accents */}
                 <div
                     style={{
                         position: 'absolute',

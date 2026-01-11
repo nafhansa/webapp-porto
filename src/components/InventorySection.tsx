@@ -2,18 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-// Register Plugin
 gsap.registerPlugin(ScrollTrigger);
 
 ScrollTrigger.config({
   autoRefreshEvents: "visibilitychange,DOMContentLoaded,load", 
-  ignoreMobileResize: true, // WAJIB: Biar gak reflow pas address bar Chrome mobile muncul/hilang
-  syncInterval: 999 // Mengurangi frekuensi pengecekan sinkronisasi
+  ignoreMobileResize: true,
+  syncInterval: 999
 });
-
-// ==========================================
-// 1. MINECRAFT INTERACTIVE GRID COMPONENT
-// ==========================================
 const MinecraftGridBackground: React.FC = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const gridBlocksRef = useRef<any[]>([]);
@@ -78,10 +73,6 @@ const MinecraftGridBackground: React.FC = () => {
     return <div ref={containerRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }} />;
 }
 
-// ==========================================
-// 2. MAIN INVENTORY SECTION
-// ==========================================
-
 interface ItemData {
     id: number; name: string; icon: string; count: number; type: string; rarity: string; desc: string;
 }
@@ -107,8 +98,6 @@ const InventorySection: React.FC = () => {
     const [items, setItems] = useState<(ItemData | null)[]>(getInitialItems());
     const [selectedItem, setSelectedItem] = useState<ItemData | null>(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-    
-    // --- STATE ---
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
     const [pickedIndex, setPickedIndex] = useState<number | null>(null);
 
@@ -119,7 +108,6 @@ const InventorySection: React.FC = () => {
 
     const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
 
-    // --- MOVE LOGIC ---
     const moveItem = (fromIndex: number, toIndex: number) => {
         if (fromIndex === toIndex) return;
         const newItems = [...items];
@@ -129,7 +117,6 @@ const InventorySection: React.FC = () => {
         setItems(newItems);
     };
 
-    // --- DRAG HANDLERS ---
     const handleDragStart = (e: React.DragEvent, index: number) => {
         setDraggedIndex(index);
         setPickedIndex(null); 
@@ -150,32 +137,22 @@ const InventorySection: React.FC = () => {
         }
     };
 
-    // --- CLICK HANDLERS (LOGIC FIX DISINI) ---
     const handleSlotClick = (index: number) => {
-        // CASE 1: Belum ada yang di-pick
         if (pickedIndex === null) {
             if (items[index]) {
                 setPickedIndex(index);
-                setSelectedItem(items[index]); // Munculin Tooltip
+                setSelectedItem(items[index]);
             }
-        } 
-        // CASE 2: Sudah ada yang di-pick (Mau drop atau cancel)
-        else {
+        } else {
             if (pickedIndex === index) {
-                // Cancel (klik slot yang sama)
                 setPickedIndex(null);
-            } 
-            else {
-                // Move (klik slot beda)
+            } else {
                 moveItem(pickedIndex, index);
                 setPickedIndex(null);
             }
-            // FIX: Otomatis hilangkan tooltip setelah drop/cancel
             setSelectedItem(null); 
         }
     };
-
-    // --- GSAP & RESIZE ---
     useEffect(() => {
         const onResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', onResize);
@@ -218,13 +195,11 @@ const InventorySection: React.FC = () => {
                 onDrop={(e) => handleDrop(e, index)}
                 onClick={() => handleSlotClick(index)}
                 onMouseEnter={() => {
-                    // Hover Desktop only
                     if (!draggedIndex && pickedIndex === null && item && !isMobile) {
                         setSelectedItem(item);
                     }
                 }}
                 onMouseLeave={() => {
-                    // Hover Desktop only
                     if (!isMobile && pickedIndex === null) setSelectedItem(null);
                 }}
                 style={{
@@ -295,7 +270,6 @@ const InventorySection: React.FC = () => {
                 </div>
             </div>
 
-            {/* --- TOOLTIP FIX --- */}
             {selectedItem && !draggedIndex && (
                 <div style={isMobile ? {
                     position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
@@ -316,7 +290,6 @@ const InventorySection: React.FC = () => {
                     <div style={{ 
                         color: selectedItem.rarity === 'Legendary' ? '#FFAA00' : selectedItem.rarity === 'Epic' ? '#A335EE' : selectedItem.rarity === 'Rare' ? '#0070DD' : '#FFFFFF', 
                         fontFamily: '"Press Start 2P", cursive', 
-                        // FIX: Font Size Judul Responsive
                         fontSize: isMobile ? '0.9rem' : '1.1rem', 
                         marginBottom: '10px', lineHeight: '1.4', textShadow: '3px 3px 0 #000' 
                     }}>
@@ -325,7 +298,6 @@ const InventorySection: React.FC = () => {
                     
                     <div style={{ 
                         color: '#AAAAAA', 
-                        // FIX: Font Size Type Responsive
                         fontSize: isMobile ? '0.75rem' : '0.9rem', 
                         fontStyle: 'italic', marginBottom: '12px', fontFamily: 'monospace' 
                     }}>
@@ -334,7 +306,6 @@ const InventorySection: React.FC = () => {
                     
                     <div style={{ 
                         color: '#CCCCCC', 
-                        // FIX: Font Size Desc Responsive
                         fontSize: isMobile ? '0.85rem' : '1rem', 
                         lineHeight: '1.5', fontFamily: 'monospace' 
                     }}>

@@ -2,14 +2,175 @@ import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-// Register Plugin
 gsap.registerPlugin(ScrollTrigger);
 
 ScrollTrigger.config({
   autoRefreshEvents: "visibilitychange,DOMContentLoaded,load", 
-  ignoreMobileResize: true, // WAJIB: Biar gak reflow pas address bar Chrome mobile muncul/hilang
-  syncInterval: 999 // Mengurangi frekuensi pengecekan sinkronisasi
+  ignoreMobileResize: true,
+  syncInterval: 999
 });
+const MinecraftLavaEffect: React.FC = () => {
+    const createStreamPath = (startX: number, side: 'left' | 'right') => {
+        const segments = 20;
+        const path: { x: number; y: number; width: number; rotation: number }[] = [];
+        let currentX = startX;
+        
+        for (let j = 0; j < segments; j++) {
+            let moveX = 0;
+            
+            if (j % 3 === 0) {
+                moveX = (Math.random() - 0.5) * 25;
+            } else if (j % 2 === 0) {
+                moveX = (Math.random() - 0.5) * 12;
+            } else {
+                moveX = (Math.random() - 0.5) * 6;
+            }
+            
+            currentX += moveX;
+            
+            if (side === 'left') {
+                currentX = Math.max(0, Math.min(25, currentX));
+            } else {
+                currentX = Math.max(75, Math.min(100, currentX));
+            }
+            
+            const rotation = moveX * 2;
+            
+            path.push({
+                x: currentX,
+                y: (j / segments) * 100,
+                width: 10 + Math.random() * 6,
+                rotation: rotation
+            });
+        }
+        
+        return path;
+    };
+    
+    const leftStreams = Array.from({ length: 5 }, (_, i) => ({
+        id: `left-${i}`,
+        path: createStreamPath(3 + i * 4, 'left'),
+        fallDuration: 10 + Math.random() * 5,
+        animationDelay: Math.random() * 10
+    }));
+    
+    const rightStreams = Array.from({ length: 5 }, (_, i) => ({
+        id: `right-${i}`,
+        path: createStreamPath(97 - i * 4, 'right'),
+        fallDuration: 10 + Math.random() * 5,
+        animationDelay: Math.random() * 10
+    }));
+    
+    const lavaStreams = [...leftStreams, ...rightStreams];
+
+    return (
+        <>
+            <style>{`
+                @keyframes lavaFlow {
+                    0% {
+                        background-position: 0 0;
+                    }
+                    100% {
+                        background-position: 0 100px;
+                    }
+                }
+                
+                @keyframes lavaGlow {
+                    0%, 100% {
+                        filter: brightness(1) saturate(1);
+                    }
+                    50% {
+                        filter: brightness(1.3) saturate(1.5);
+                    }
+                }
+                
+                @keyframes lavaFall {
+                    0% {
+                        transform: translateY(-120vh);
+                        opacity: 0;
+                    }
+                    5% {
+                        opacity: 1;
+                    }
+                    95% {
+                        opacity: 1;
+                    }
+                    100% {
+                        transform: translateY(120vh);
+                        opacity: 0;
+                    }
+                }
+                
+                .lava-stream-container {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    pointer-events: none;
+                    animation: lavaFall linear infinite;
+                    will-change: transform;
+                }
+                
+                .lava-stream-segment {
+                    position: absolute;
+                    background: linear-gradient(180deg,
+                        rgba(255, 107, 0, 0.7) 0%,
+                        rgba(255, 69, 0, 0.8) 25%,
+                        rgba(255, 140, 0, 0.7) 50%,
+                        rgba(255, 69, 0, 0.8) 75%,
+                        rgba(255, 107, 0, 0.8) 100%
+                    );
+                    background-size: 100% 80px;
+                    animation: lavaFlow linear infinite, lavaGlow 2s ease-in-out infinite;
+                    box-shadow: 
+                        inset 2px 0 4px rgba(255, 200, 0, 0.5),
+                        inset -2px 0 4px rgba(139, 0, 0, 0.5),
+                        0 0 15px rgba(255, 69, 0, 0.6);
+                    pointer-events: none;
+                    will-change: background-position;
+                    border-radius: 2px;
+                }
+            `}</style>
+            {lavaStreams.map((stream) => (
+                <div
+                    key={stream.id}
+                    className="lava-stream-container"
+                    style={{
+                        left: '0%',
+                        animationDuration: `${stream.fallDuration}s`,
+                        animationDelay: `${stream.animationDelay}s`,
+                        zIndex: 1
+                    }}
+                >
+                    {stream.path.map((segment, segIndex) => {
+                        const nextSegment = stream.path[segIndex + 1];
+                        const height = nextSegment 
+                            ? `${nextSegment.y - segment.y + 3}%` 
+                            : '6%';
+                        
+                        return (
+                            <div
+                                key={`${stream.id}-${segIndex}`}
+                                className="lava-stream-segment"
+                                style={{
+                                    left: `${segment.x}%`,
+                                    top: `${segment.y}%`,
+                                    width: `${segment.width}px`,
+                                    height: height,
+                                    transform: `rotate(${segment.rotation * 0.5}deg)`,
+                                    transformOrigin: 'top center',
+                                    animationDuration: `${stream.fallDuration * 0.3}s, 2s`,
+                                    animationDelay: `0s, ${stream.animationDelay}s`
+                                }}
+                            />
+                        );
+                    })}
+                </div>
+            ))}
+        </>
+    );
+};
 
 const AboutSection: React.FC = () => {
     const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
@@ -22,13 +183,11 @@ const AboutSection: React.FC = () => {
     const titleRef = useRef<HTMLHeadingElement>(null);
     const avatarBoxRef = useRef<HTMLDivElement>(null);
     const statsBoxRef = useRef<HTMLDivElement>(null);
-    const heartsRef = useRef<HTMLSpanElement[]>([]); // Array Ref
+    const heartsRef = useRef<HTMLSpanElement[]>([]);
     const xpBarRef = useRef<HTMLDivElement>(null);
 
-    // Reset array ref setiap render agar tidak duplikat
     heartsRef.current = [];
 
-    // Helper untuk memasukkan ref hati secara aman
     const addToHeartsRef = (el: HTMLSpanElement | null) => {
         if (el && !heartsRef.current.includes(el)) {
             heartsRef.current.push(el);
@@ -44,20 +203,17 @@ const AboutSection: React.FC = () => {
     };
 
     useEffect(() => {
-        // Context GSAP untuk pembersihan otomatis (Cleanup)
         const ctx = gsap.context(() => {
-
             const tl = gsap.timeline({
                 scrollTrigger: {
                     trigger: sectionRef.current,
-                    start: "top 75%", // Mulai saat bagian atas section menyentuh 75% layar
+                    start: "top 75%",
                     end: "top 20%",
                     toggleActions: "play none none reverse",
-                    markers: false // UBAH JADI TRUE JIKA MASIH GAK JALAN (Buat Debug)
+                    markers: false
                 }
             });
 
-            // 1. Judul Jatuh
             tl.from(titleRef.current, {
                 y: -50,
                 opacity: 0,
@@ -65,7 +221,6 @@ const AboutSection: React.FC = () => {
                 ease: "bounce.out"
             });
 
-            // 2. Avatar Pop
             tl.from(avatarBoxRef.current, {
                 scale: 0.5,
                 opacity: 0,
@@ -73,7 +228,6 @@ const AboutSection: React.FC = () => {
                 ease: "back.out(1.7)"
             }, "-=0.5");
 
-            // 3. Stats Geser
             tl.from(statsBoxRef.current, {
                 x: 100,
                 opacity: 0,
@@ -81,25 +235,22 @@ const AboutSection: React.FC = () => {
                 ease: "power2.out"
             }, "-=0.6");
 
-            // 4. Hati (Health) Muncul Satu-satu
             tl.from(heartsRef.current, {
                 scale: 0,
                 opacity: 0,
-                stagger: 0.1, // Jeda antar hati
+                stagger: 0.1,
                 duration: 0.4,
                 ease: "back.out(2)"
             }, "-=0.4");
 
-            // 5. XP Bar Mengisi
             tl.from(xpBarRef.current, {
                 width: "0%",
                 duration: 1.5,
                 ease: "power2.out"
             }, "-=1");
+        }, sectionRef);
 
-        }, sectionRef); // Scope ke sectionRef
-
-        return () => ctx.revert(); // Wajib revert saat unmount
+        return () => ctx.revert();
     }, []);
 
     return (
@@ -120,8 +271,10 @@ const AboutSection: React.FC = () => {
                 borderTop: '4px solid #000',
                 color: '#fff',
                 fontFamily: 'monospace',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                position: 'relative'
             }}>
+            <MinecraftLavaEffect />
 
             <h2
                 ref={titleRef}
@@ -132,7 +285,9 @@ const AboutSection: React.FC = () => {
                     textShadow: '4px 4px 0 #000',
                     textAlign: 'center',
                     borderBottom: '4px solid #555',
-                    paddingBottom: '10px'
+                    paddingBottom: '10px',
+                    position: 'relative',
+                    zIndex: 10
                 }}>
                 PLAYER STATISTICS
             </h2>
@@ -145,10 +300,10 @@ const AboutSection: React.FC = () => {
                 gap: '40px',
                 justifyContent: 'center',
                 alignItems: 'stretch',
-                margin: '0 auto'
+                margin: '0 auto',
+                position: 'relative',
+                zIndex: 10
             }}>
-
-                {/* --- KOLOM KIRI (AVATAR) --- */}
                 <div
                     ref={avatarBoxRef}
                     style={{
@@ -210,8 +365,7 @@ const AboutSection: React.FC = () => {
                     </button>
                 </div>
 
-                {/* --- KOLOM KANAN (STATS) --- */}
-                    <div
+                <div
                         ref={statsBoxRef}
                         style={{
                         flex: isMobile ? '1 1 100% auto' : '1 1 400px',
@@ -227,15 +381,13 @@ const AboutSection: React.FC = () => {
                         maxWidth: isMobile ? '560px' : 'none',
                         margin: isMobile ? '0 auto' : undefined
                     }}>
-
-                    {/* HEALTH BAR */}
                     <div style={{ marginBottom: '20px' }}>
                         <p style={{ marginBottom: '5px', color: '#aaa', fontWeight: 'bold' }}>HEALTH (STATUS)</p>
                         <div style={{ display: 'flex', gap: '5px' }}>
                             {[...Array(10)].map((_, i) => (
                                 <span
                                     key={i}
-                                    ref={addToHeartsRef} // Menggunakan helper function
+                                    ref={addToHeartsRef}
                                     style={{ fontSize: '1.5rem', color: '#ff5555', textShadow: '2px 2px 0 #000', display: 'inline-block' }}
                                 >
                                     ♥
@@ -245,7 +397,6 @@ const AboutSection: React.FC = () => {
                         <p style={{ fontSize: '0.8rem', color: '#55ff55', marginTop: '5px' }}>&gt; Ready for work</p>
                     </div>
 
-                    {/* EXPERIENCE */}
                     <div style={{ marginBottom: '20px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                             <p style={{ marginBottom: '5px', color: '#aaa', fontWeight: 'bold' }}>EXPERIENCE ON CODING</p>
@@ -261,7 +412,6 @@ const AboutSection: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* ATTRIBUTES & LORE */}
                     <div style={{ marginBottom: '25px', borderTop: '2px dashed #555', paddingTop: '15px' }}>
                         <table style={{ width: '100%', fontSize: '1rem', borderSpacing: '0 10px' }}>
                             <tbody>

@@ -10,11 +10,9 @@ import {
   Group, 
   AudioContext,
   Material,
-  PositionalAudio as ThreePositionalAudio // Pakai alias agar tidak bentrok dengan komponen PositionalAudio dari Drei
+  PositionalAudio as ThreePositionalAudio
 } from 'three';
 import { easing } from 'maath'
-
-// --- INTERFACES ---
 interface PortalModelProps {
     isZooming: boolean;
     onEnter: () => void;
@@ -62,18 +60,14 @@ function PortalModel({ isZooming, onEnter }: PortalModelProps) {
     }, [scene])
 
     useFrame((state, delta) => {
-        // 1. Rotasi Otomatis
         if (autoRotateRef.current && !isZooming) {
             autoRotateRef.current.rotation.y += delta * 0.3
         }
 
-        // 2. Efek Kedip Cahaya Portal
         if (portalMaterialRef.current) {
             const time = state.clock.elapsedTime
             portalMaterialRef.current.emissiveIntensity = 10 + Math.sin(time * 3) * 8
         }
-
-        // 3. Animasi Zooming
         if (isZooming) {
             if (zoomStartTimeRef.current === null) {
                 zoomStartTimeRef.current = state.clock.elapsedTime
@@ -126,7 +120,6 @@ function PortalModel({ isZooming, onEnter }: PortalModelProps) {
     )
 }
 
-// --- MAIN SCENE COMPONENT ---
 export default function NetherPortalScene({ onEnter, isZooming, setIsZooming }: NetherPortalSceneProps) {
     const [isMobileDevice, setIsMobileDevice] = useState<boolean>(
         typeof window !== 'undefined' ? window.innerWidth < 768 : false
@@ -155,7 +148,6 @@ export default function NetherPortalScene({ onEnter, isZooming, setIsZooming }: 
 
     return (
         <div style={{ width: '100vw', height: '100vh', background: 'black', position: 'relative' }}>
-            {/* INJECT CSS UNTUK HOVER TOMBOL AGAR JS LEBIH RINGAN */}
             <style>{`
                 .exit-nether-btn {
                     padding: 15px 45px;
@@ -195,7 +187,6 @@ export default function NetherPortalScene({ onEnter, isZooming, setIsZooming }: 
                 <PerspectiveCamera makeDefault position={[0, 4.3, 12]} fov={50} />
                 <OrbitControls enabled={!isZooming} target={[0, 4.3, 0]} minDistance={5} maxDistance={25} />
 
-                {/* Kompensasi Cahaya: Mobile lebih terang karena Bloom mati */}
                 <ambientLight intensity={isMobileDevice ? 2.5 : 1.2} color="#4b0082" />
                 <pointLight position={[0, 4.3, 5]} intensity={isMobileDevice ? 100 : 60} color="#ff00ff" />
                 <pointLight position={[0, 4.3, -5]} intensity={60} color="#ff00ff" />
@@ -209,7 +200,6 @@ export default function NetherPortalScene({ onEnter, isZooming, setIsZooming }: 
                     {!isMobileDevice && <Preload all />}
                 </Suspense>
 
-                {/* Post-processing: Hanya dirender di Desktop */}
                 {!isMobileDevice && (
                     <EffectComposer>
                         <Bloom 

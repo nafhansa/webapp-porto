@@ -43,7 +43,6 @@ function SteveModel({ scale = 0.035 }: SteveProps) {
 }
 
 const HeroSection: React.FC = () => {
-    // 1. Tetap gunakan isMobile untuk UI HTML, tapi jangan pakai untuk properti berat Three.js
     const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
 
     useEffect(() => {
@@ -52,7 +51,6 @@ const HeroSection: React.FC = () => {
         return () => window.removeEventListener('resize', onResize);
     }, []);
 
-    // 2. Gunakan useMemo untuk nilai yang tidak perlu berubah-ubah agar tidak memicu kalkulasi ulang
     const shadowMapSize = useMemo(() => (isMobile ? 512 : 1024), [isMobile]);
 
     return (
@@ -92,20 +90,17 @@ const HeroSection: React.FC = () => {
                 </p>
             </div>
 
-            {/* 3. OPTIMASI: Tambahkan dpr tetap agar tidak reflow saat resize kecil */}
             <Canvas 
-                // 1. Matikan sistem shadow utama jika mobile
                 shadows={!isMobile} 
-                dpr={[1, 1.2]} // Turunkan sedikit dpr di mobile untuk performa
-                gl={{ powerPreference: "high-performance", antialias: !isMobile }} // Antialias off di mobile juga membantu
+                dpr={[1, 1.2]}
+                gl={{ powerPreference: "high-performance", antialias: !isMobile }}
                 >
                 <PerspectiveCamera makeDefault position={[0, 1, isMobile ? 18 : 12]} fov={50} />
 
                 <Stars radius={100} depth={50} count={isMobile ? 1000 : 2500} factor={4} saturation={0} fade speed={1} />
 
-                <ambientLight intensity={isMobile ? 0.8 : 0.3} /> {/* Terangkan ambient jika shadow mati */}
+                <ambientLight intensity={isMobile ? 0.8 : 0.3} />
                 
-                {/* 2. DirectionalLight: Matikan castShadow jika mobile */}
                 <directionalLight
                     color="#b9d5ff"
                     position={[10, 20, 10]}
@@ -118,7 +113,6 @@ const HeroSection: React.FC = () => {
                     <SteveModel scale={0.005} />
                     <MinecraftGround />
 
-                    {/* 3. ContactShadows: HANYA render jika bukan mobile */}
                     {!isMobile && (
                         <ContactShadows
                             position={[0, -1.79, 0]}
