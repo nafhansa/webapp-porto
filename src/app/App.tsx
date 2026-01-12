@@ -1,5 +1,6 @@
 import { useState, useEffect, Suspense, lazy } from 'react'
 import PortalTransition from '../components/PortalTransition'
+import MapNav from '../components/MapNav'
 
 const NetherPortalScene = lazy(() => import('../components/NetherPortalScene'));
 const HeroSection = lazy(() => import('../components/HeroSection'));
@@ -9,6 +10,7 @@ const TimeTravelSection = lazy(() => import('../components/TimeTravelSection'));
 const QuestLogSection = lazy(() => import('../components/QuestLogSection'));
 const MinecraftFooter = lazy(() => import('../components/MinecraftFooter'));
 const CobaSection = lazy(() => import('../components/CobaSection'));
+const StoryPage = lazy(() => import('../components/StoryPage'));
 
 function App() {
     const [hasEntered, setHasEntered] = useState<boolean>(false)
@@ -26,7 +28,7 @@ function App() {
 
         const pathname = window.location.pathname;
 
-        if (pathname === '/coba') {
+        if (pathname === '/coba' || pathname === '/story') {
             return;
         }
 
@@ -39,7 +41,7 @@ function App() {
 
         const onPop = () => {
             const currentPath = window.location.pathname;
-            if (currentPath === '/coba') return;
+            if (currentPath === '/coba' || currentPath === '/story') return;
             setHasEntered(currentPath === '/nafhan')
         }
 
@@ -57,14 +59,18 @@ function App() {
     }, [hasEntered])
 
     const isCobaRoute = typeof window !== 'undefined' && window.location.pathname === '/coba';
+    const isStoryRoute = typeof window !== 'undefined' && window.location.pathname === '/story';
 
     return (
     <>
-        {!isCobaRoute && <PortalTransition isZooming={isZooming} />}
+        {!isCobaRoute && !isStoryRoute && <PortalTransition isZooming={isZooming} />}
+        {hasEntered && !isStoryRoute && !isCobaRoute && <MapNav />}
 
         <Suspense fallback={<div style={{color:'white', textAlign:'center', paddingTop:'20%', fontFamily:'monospace'}}>GENERATING WORLD...</div>}>
             {isCobaRoute ? (
                 <CobaSection />
+            ) : isStoryRoute ? (
+                <StoryPage />
             ) : !hasEntered ? (
                 <NetherPortalScene
                     onEnter={() => setHasEntered(true)}
